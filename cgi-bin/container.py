@@ -100,6 +100,11 @@ class Package:
             z = x
             x = c
             rotated = True
+    def verts(self):
+        #return ((self.posx,self.posy,self.posz),(self.posx,self.posy,self.posz+self.z),(self.posx+self.x,self.posy,self.posz+self.z),(self.posx,self.posy,self.posz+self.z),(self.posx,self.posy+self.y,self.posz),(self.posx,self.posy+self.y,self.posz+self.z),(self.posx+self.x,self.posy+self.y,self.posz+self.z),(self.posx,self.posy+self.y,self.posz+self.z))
+        return [[self.posx,self.posy,self.posz],[self.posx,self.posy,self.posz+self.z],[self.posx+self.x,self.posy,self.posz+self.z],[self.posx,self.posy,self.posz+self.z],[self.posx,self.posy+self.y,self.posz],[self.posx,self.posy+self.y,self.posz+self.z],[self.posx+self.x,self.posy+self.y,self.posz+self.z],[self.posx,self.posy+self.y,self.posz+self.z]]
+
+        
 
 class Container:
     def __init__(self,x,z,h):
@@ -208,24 +213,115 @@ for c in containers:
         print("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td>{6}</td><td>{7}</td><td>{8}</td><td>{9}</td></tr>".format(p.name,p.posx,p.posz,p.posy,p.rotated,p.x,p.z,p.y,p.above,p.below))
     print("</table>")
     
-c = containers[0]
-first = True
-voxels
-colors = np.empty(voxels.shape, dtype=object)
-colors[0] = 'green'
-for p in c.packages:
-    x,y,z = np.indices((c.zone.x,c.zone.z,c.zone.y))
-    cube = (p.posx > x) & (x < p.posx + p.x) & (p.posz > y) & (y < p.posz + p.z) & (p.posy > z) & (z < p.posy + p.y)
-    if first:
-        voxels = cube
-    else:
-        voxels = voxels | cube
-    colors[-1] = 'green'
-fig = plt.figure()
-ax = fig.gca(projection='3d')
-ax.voxels(voxels,facecolors=colors,edgecolor='k')
-plt.show()
-# POST input: name[] length[] width[] height[] qty[] weight[] rotation[] top[] bottom[]
+
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from OpenGL.GLUT import *
+
+from PIL import Image
+from PIL import ImageOps
+
+import sys
+import base64
+
+width, height = 300, 300
+
+def init():
+    glClearColor(0.5, 0.5, 0.5, 1.0)
+    #gluOrtho2D(-1.0, 1.0, -1.0, 1.0)
+    gluLookAt(100,100,100,0,0,0,0,1,0)
+    glMatrixMode(GL_PROJECTION)
+    glViewport(0, 0, width, height)
+
+def render():
+
+    glClear(GL_COLOR_BUFFER_BIT)
+    p = containers[0].packages[0]
+    v = p.verts()
+
+    # draw xy axis with arrows
+    glBegin(GL_LINES)
+    glColor(0.0, 0.0, 0.0)
+
+    # x
+    glVertex(v[1])
+    glVertex(v[2])
+
+    glVertex(v[2])
+    glVertex(v[3])
+
+    glVertex(v[1])
+    glVertex(v[5])
+
+    glVertex(v[6])
+    glVertex(v[2])
+
+    glVertex(v[7])
+    glVertex(v[3])
+
+    glVertex(v[4])
+    glVertex(v[7])
+
+    glVertex(v[7])
+    glVertex(v[6])
+
+    glVertex(v[6])
+    glVertex(v[5])
+
+    glVertex(v[5])
+    glVertex(v[4])
+
+    glEnd()
+
+    glBegin(GL_QUADS)
+    glColor(0.0, 1.0, 0.0)
+    glVertex(v[2])
+    glVertex(v[6])
+    glVertex(v[7])
+    glVertex(v[3])
+
+    glVertex(v[1])
+    glVertex(v[5])
+    glVertex(v[6])
+    glVertex(v[2])
+
+    glVertex(v[4])
+    glVertex(v[7])
+    glVertex(v[6])
+    glVertex(v[5])
+    
+    glEnd()
+
+    glFlush()
 
 
+def draw():
+    render()
+    glutSwapBuffers()
+
+def main():
+    glutInit(sys.argv)
+
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)
+    glutInitWindowSize(300, 300)
+    glutCreateWindow(b"OpenGL Offscreen")
+    glutHideWindow()
+
+    init()
+    render()
+
+    glPixelStorei(GL_PACK_ALIGNMENT, 1)
+    data = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
+    image = Image.frombytes("RGBA", (width, height), data)
+    image = ImageOps.flip(image) # in my case image is flipped top-bottom for some reason
+    image.save('glutout.png', 'PNG')
+    data_uri= base64.b64encode(open('glutout.png','rb').read()).decode('utf-8')
+    img_tag='<img src="data:image/png;base64,{0}">'.format(data_uri)
+    print(img_tag)
+    
+
+    #glutDisplayFunc(draw)
+    #glutMainLoop()
+
+main()
 
