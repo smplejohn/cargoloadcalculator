@@ -1,0 +1,69 @@
+<body bgcolor="#f0f0f8">
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#6622aa">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>ValueError</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial">Python 3.7.4: C:\Program Files (x86)\Python37-32\python.exe<br>Mon Feb 17 05:00:04 2020</font></td></tr></table>
+    
+<p>A problem occurred in a Python script.  Here is the sequence of
+function calls leading up to the error, in the order they occurred.</p>
+<table width="100%" cellspacing=0 cellpadding=0 border=0>
+<tr><td bgcolor="#d8bbff"><big>&nbsp;</big><a href="file://f:\Github\container\cgi-bin\container.py">f:\Github\container\cgi-bin\container.py</a> in <strong>&lt;module&gt;</strong>()</td></tr>
+<tr><td><font color="#909090"><tt>&nbsp;&nbsp;<small>&nbsp;&nbsp;163</small>&nbsp;containers&nbsp;=&nbsp;[]<br>
+</tt></font></td></tr>
+<tr><td><font color="#909090"><tt>&nbsp;&nbsp;<small>&nbsp;&nbsp;164</small>&nbsp;while&nbsp;True:<br>
+</tt></font></td></tr>
+<tr><td bgcolor="#ffccee"><tt>=&gt;<small>&nbsp;&nbsp;165</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;containers.append(Container(container_size[0],container_size[1],container_size[2]))<br>
+</tt></td></tr>
+<tr><td><font color="#909090"><tt>&nbsp;&nbsp;<small>&nbsp;&nbsp;166</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print("Made&nbsp;container&nbsp;#{0}&nbsp;with&nbsp;dimensions&nbsp;{1}x{2}x{3}&lt;br/&gt;".format(len(containers),container_size[0],container_size[1],container_size[2]))<br>
+</tt></font></td></tr>
+<tr><td><font color="#909090"><tt>&nbsp;&nbsp;<small>&nbsp;&nbsp;167</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fitpackagesintozone(packages,containers[-1].zone)<br>
+</tt></font></td></tr>
+<tr><td><small><font color="#909090"><strong>containers</strong>&nbsp;= [], containers.<strong>append</strong>&nbsp;= &lt;built-in method append of list object&gt;, <strong>Container</strong>&nbsp;= &lt;class '__main__.Container'&gt;, <strong>container_size</strong>&nbsp;= [50, 100, 50]</font></small></td></tr></table>
+<table width="100%" cellspacing=0 cellpadding=0 border=0>
+<tr><td bgcolor="#d8bbff"><big>&nbsp;</big><a href="file://f:\Github\container\cgi-bin\container.py">f:\Github\container\cgi-bin\container.py</a> in <strong>__init__</strong>(self=&lt;__main__.Container object&gt;, x=50, z=100, h=50)</td></tr>
+<tr><td><font color="#909090"><tt>&nbsp;&nbsp;<small>&nbsp;&nbsp;&nbsp;99</small>&nbsp;class&nbsp;Container:<br>
+</tt></font></td></tr>
+<tr><td><font color="#909090"><tt>&nbsp;&nbsp;<small>&nbsp;&nbsp;100</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;__init__(self,x,z,h):<br>
+</tt></font></td></tr>
+<tr><td bgcolor="#ffccee"><tt>=&gt;<small>&nbsp;&nbsp;101</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;self.zone&nbsp;=&nbsp;Zone(0,0,0,x,z,h)<br>
+</tt></td></tr>
+<tr><td><font color="#909090"><tt>&nbsp;&nbsp;<small>&nbsp;&nbsp;102</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;self.packages&nbsp;=&nbsp;[]<br>
+</tt></font></td></tr>
+<tr><td><font color="#909090"><tt>&nbsp;&nbsp;<small>&nbsp;&nbsp;103</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;reportefficiency(self):<br>
+</tt></font></td></tr>
+<tr><td><small><font color="#909090"><strong>self</strong>&nbsp;= &lt;__main__.Container object&gt;, self.zone <em>undefined</em>, <em>global</em> <strong>Zone</strong>&nbsp;= &lt;class '__main__.Zone'&gt;, <strong>x</strong>&nbsp;= 50, <strong>z</strong>&nbsp;= 100, <strong>h</strong>&nbsp;= 50</font></small></td></tr></table>
+<table width="100%" cellspacing=0 cellpadding=0 border=0>
+<tr><td bgcolor="#d8bbff"><big>&nbsp;</big><a href="file://f:\Github\container\cgi-bin\container.py">f:\Github\container\cgi-bin\container.py</a> in <strong>__init__</strong>(self=&lt;__main__.Zone object&gt;, px=0, pz=0, py=0, sx=50, sz=100, sy=50)</td></tr>
+<tr><td><font color="#909090"><tt>&nbsp;&nbsp;<small>&nbsp;&nbsp;&nbsp;31</small>&nbsp;class&nbsp;Zone:<br>
+</tt></font></td></tr>
+<tr><td><font color="#909090"><tt>&nbsp;&nbsp;<small>&nbsp;&nbsp;&nbsp;32</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;__init__(self,px,pz,py,sx,sz,sy):<br>
+</tt></font></td></tr>
+<tr><td bgcolor="#ffccee"><tt>=&gt;<small>&nbsp;&nbsp;&nbsp;33</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print("Zone&nbsp;made&nbsp;P:(0},(1},{2}&nbsp;S:{3},{4},{5}&lt;br/&gt;".format(px,pz,py,sx,sz,sy))<br>
+</tt></td></tr>
+<tr><td><font color="#909090"><tt>&nbsp;&nbsp;<small>&nbsp;&nbsp;&nbsp;34</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;self.posx&nbsp;=&nbsp;px<br>
+</tt></font></td></tr>
+<tr><td><font color="#909090"><tt>&nbsp;&nbsp;<small>&nbsp;&nbsp;&nbsp;35</small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;self.posz&nbsp;=&nbsp;pz<br>
+</tt></font></td></tr>
+<tr><td><small><font color="#909090"><em>builtin</em> <strong>print</strong>&nbsp;= &lt;built-in function print&gt;, "Zone made P:(0},(1},{2} S:{3},{4},{5}<br/>".format <em>undefined</em>, <strong>px</strong>&nbsp;= 0, <strong>pz</strong>&nbsp;= 0, <strong>py</strong>&nbsp;= 0, <strong>sx</strong>&nbsp;= 50, <strong>sz</strong>&nbsp;= 100, <strong>sy</strong>&nbsp;= 50</font></small></td></tr></table><p><strong>ValueError</strong>: Single '}' encountered in format string
+<br><tt><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</small>&nbsp;</tt>args&nbsp;=
+("Single '}' encountered in format string",)
+<br><tt><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</small>&nbsp;</tt>with_traceback&nbsp;=
+&lt;built-in method with_traceback of ValueError object&gt;
+
+
+<!-- The above is a description of an error in a Python program, formatted
+     for a Web browser because the 'cgitb' module was enabled.  In case you
+     are not reading this in a Web browser, here is the original traceback:
+
+Traceback (most recent call last):
+  File "f:\Github\container\cgi-bin\container.py", line 165, in &lt;module&gt;
+    containers.append(Container(container_size[0],container_size[1],container_size[2]))
+  File "f:\Github\container\cgi-bin\container.py", line 101, in __init__
+    self.zone = Zone(0,0,0,x,z,h)
+  File "f:\Github\container\cgi-bin\container.py", line 33, in __init__
+    print("Zone made P:(0},(1},{2} S:{3},{4},{5}&lt;br/&gt;".format(px,pz,py,sx,sz,sy))
+ValueError: Single '}' encountered in format string
+
+-->
