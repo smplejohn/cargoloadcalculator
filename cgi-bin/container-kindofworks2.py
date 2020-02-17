@@ -223,76 +223,44 @@ from PIL import ImageOps
 
 import sys
 import base64
-
-from OpenGL.GL import *
-from OpenGL.GLU import *
-from OpenGL.GLUT import *
-
-from PIL import Image
-from PIL import ImageOps
-
-import sys
-
-width, height = 640, 480
-
-def init():
-    glClearColor(0.0, 0.0, 0.5, 1.0)
-    gluOrtho2D(-1.0, 1.0, -1.0, 1.0)
-    glViewport(0, 0, width, height)
-
-def render():
-
-    glClear(GL_COLOR_BUFFER_BIT)
-
-    # draw xy axis with arrows
-    glBegin(GL_LINES)
-
-    # x
-    glVertex2d(-1, 0)
-    glVertex2d(1, 0)
-    glVertex2d(1, 0)
-    glVertex2d(0.95, 0.05)
-    glVertex2d(1, 0)
-    glVertex2d(0.95, -0.05)
-
-    # y
-    glVertex2d(0, -1)
-    glVertex2d(0, 1)
-    glVertex2d(0, 1)
-    glVertex2d(0.05, 0.95)
-    glVertex2d(0, 1)
-    glVertex2d(-0.05, 0.95)
-
-    glEnd()
-
-    glFlush()
-
-
-def draw():
-    render()
-    glutSwapBuffers()
-
-def main():
+def InitGL(Width, Height): 
+ 
+        glClearColor(0.0, 0.0, 0.0, 0.0)
+        glClearDepth(1.0) 
+        glDepthFunc(GL_LESS)
+        glEnable(GL_DEPTH_TEST)
+        glShadeModel(GL_SMOOTH)   
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        gluPerspective(45.0, float(Width)/float(Height), 0.1, 100.0)
+        glMatrixMode(GL_MODELVIEW)
+def glmain:
     glutInit(sys.argv)
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
+    glutInitWindowSize(640,480)
+    glutInitWindowPosition(200,200)
 
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)
-    glutInitWindowSize(300, 300)
-    glutCreateWindow(b"OpenGL Offscreen")
-    glutHideWindow()
+    window = glutCreateWindow('OpenGL Python Cube')
 
-    init()
-    render()
+    glutDisplayFunc(DrawGLScene)
+    glutIdleFunc(DrawGLScene)
+    glutKeyboardFunc(keyPressed)
+    InitGL(640, 480)
+    glutMainLoop()
+
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1)
-    data = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
-    image = Image.frombytes("RGBA", (width, height), data)
+    data = glReadPixels(0, 0, glw, glh, GL_RGBA, GL_UNSIGNED_BYTE)
+    image = Image.frombytes("RGBA", (glw, glh), data)
     image = ImageOps.flip(image) # in my case image is flipped top-bottom for some reason
     image.save('glutout.png', 'PNG')
     data_uri= base64.b64encode(open('glutout.png','rb').read()).decode('utf-8')
     img_tag='<img src="data:image/png;base64,{0}">'.format(data_uri)
     print(img_tag)
+    
 
     #glutDisplayFunc(draw)
     #glutMainLoop()
 
-main()
+glmain()
+

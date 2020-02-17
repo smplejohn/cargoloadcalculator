@@ -214,29 +214,11 @@ for c in containers:
     print("</table>")
     
 
-from OpenGL.GL import *
-from OpenGL.GLU import *
-from OpenGL.GLUT import *
-
-from PIL import Image
-from PIL import ImageOps
-
-import sys
-import base64
-
-from OpenGL.GL import *
-from OpenGL.GLU import *
-from OpenGL.GLUT import *
-
-from PIL import Image
-from PIL import ImageOps
-
-import sys
-
-width, height = 640, 480
+width, height = 300, 300
 
 def init():
-    glClearColor(0.0, 0.0, 0.5, 1.0)
+    glClearColor(0.5, 0.5, 1.0, 1.0)
+    glColor(0.0, 1.0, 0.0)
     gluOrtho2D(-1.0, 1.0, -1.0, 1.0)
     glViewport(0, 0, width, height)
 
@@ -288,9 +270,6 @@ def main():
     image = Image.frombytes("RGBA", (width, height), data)
     image = ImageOps.flip(image) # in my case image is flipped top-bottom for some reason
     image.save('glutout.png', 'PNG')
-    data_uri= base64.b64encode(open('glutout.png','rb').read()).decode('utf-8')
-    img_tag='<img src="data:image/png;base64,{0}">'.format(data_uri)
-    print(img_tag)
 
     #glutDisplayFunc(draw)
     #glutMainLoop()
