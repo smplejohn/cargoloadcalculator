@@ -2,7 +2,9 @@ from random import randint, choice
 
 f = open('demo.html','w')
 f.write('<html><body><form action="/cgi-bin/container.py" method="POST">')
-
+f.write('<input type="text" name="cwidth" value="50">')
+f.write('<input type="text" name="cdepth" value="100">')
+f.write('<input type="text" name="cheight" value="50"><br/>')
 #length[] width[] height[] qty[] weight[] rotation[] top[] bottom[]
 
 checked = ['unchecked','checked']

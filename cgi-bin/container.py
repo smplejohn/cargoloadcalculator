@@ -23,6 +23,9 @@ import cgitb
 cgitb.enable(display=0,logdir=logpath)
 postdata = cgi.FieldStorage()
 
+import matplotlib.pyplot as plt
+import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 
 print ('Content-type: text/html')
 print ('')
@@ -58,10 +61,10 @@ class Zone:
         s = []
         if (self.x-xs > 1.0):
             #print("Making zone from sub A<br/>")
-            s.append(Zone(self.posx+xs,self.posz,self.posy,self.x-xs,self.z,self.y))
+            s.append(Zone(self.posx+xs,self.posz,self.posy,self.x-xs,self.z,self.y,self.floor))
         if (self.z-zs > 1.0):
             #print("Making zone from sub B<br/>")
-            s.append(Zone(self.posx,self.posz+zs,self.posy,xs,self.z-zs,self.y))
+            s.append(Zone(self.posx,self.posz+zs,self.posy,xs,self.z-zs,self.y,self.floor))
         return s
             
 
@@ -109,13 +112,17 @@ class Container:
         v = 0
         for p in self.packages:
             v = v + p.v
-        print("Container efficiency: {0}<br/>".format(v/cv))
+        #print("Container efficiency: {0}<br/>".format(v/cv))
+        return v/cv
     def render(self):
         pass
 
 packages = []
 
 #initialize package list from POST data
+container_size[0] = float(postdata.getvalue('cwidth'))
+container_size[1] = float(postdata.getvalue('cdepth'))
+container_size[2] = float(postdata.getvalue('cheight'))
 for i in range(len(postdata.getvalue('name[]'))):
     name = postdata.getvalue('name[]')[i]
     l = float(postdata.getvalue('length[]')[i])
@@ -165,15 +172,15 @@ def fitpackagesintozone(packages,zone):
     for s in subzones:
         fitpackagesintozone(packages,s)
 
-print ("Placing {0} packages<br/>".format(len(packages)))
+#print ("Placing {0} packages<br/>".format(len(packages)))
 containers = []
 sanity = 0
 while True and sanity < 10:
-    sanity += 1
+    #sanity += 1
     if len(packages) < 1:
         break
     containers.append(Container(container_size[0],container_size[1],container_size[2]))
-    print("Made container #{0} with dimensions {1}x{2}x{3}<br/>".format(len(containers),container_size[0],container_size[1],container_size[2]))
+    #print("Made container #{0} with dimensions {1}x{2}x{3}<br/>".format(len(containers),container_size[0],container_size[1],container_size[2]))
     fitpackagesintozone(packages,containers[-1].zone)
     placed = []
     for i in range(len(packages)):
@@ -184,14 +191,40 @@ while True and sanity < 10:
     if len(containers[-1].packages) < 1:
         print("No packages remaining fit in container<br/>")
         containers.pop(-1)
-        for p in packages:
-            print("{0}<br/>".format(p))
+        #for p in packages:
+            #print("{0}<br/>".format(p))
         break
     containers[-1].reportefficiency()
     containers[-1].render()
-    print("{0} packages placed. {1} remain.</br>".format(len(containers[-1].packages),len(packages)),flush=True)
+    #print("{0} packages placed. {1} remain.</br>".format(len(containers[-1].packages),len(packages)),flush=True)
     
+cn = 0
+for c in containers:
+    cn += 1
+    print("<h3>Container #{0} {1}% space filled</h3>".format(cn,c.reportefficiency()*100))
+    print("W: {0} D: {1} H: {2}<br/>".format(container_size[0],container_size[1],container_size[2]))
+    print("<table><tr><th>Name</th><th>X</th><th>Z</th><th>H</th><th>Rotated</th><th>Width</th><th>Depth</th><th>Height</th><th>Stackable (Above)</th><th>Stackable (Below)</th></tr>")
+    for p in c.packages:
+        print("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td>{6}</td><td>{7}</td><td>{8}</td><td>{9}</td></tr>".format(p.name,p.posx,p.posz,p.posy,p.rotated,p.x,p.z,p.y,p.above,p.below))
+    print("</table>")
     
+c = containers[0]
+first = True
+voxels
+colors = np.empty(voxels.shape, dtype=object)
+colors[0] = 'green'
+for p in c.packages:
+    x,y,z = np.indices((c.zone.x,c.zone.z,c.zone.y))
+    cube = (p.posx > x) & (x < p.posx + p.x) & (p.posz > y) & (y < p.posz + p.z) & (p.posy > z) & (z < p.posy + p.y)
+    if first:
+        voxels = cube
+    else:
+        voxels = voxels | cube
+    colors[-1] = 'green'
+fig = plt.figure()
+ax = fig.gca(projection='3d')
+ax.voxels(voxels,facecolors=colors,edgecolor='k')
+plt.show()
 # POST input: name[] length[] width[] height[] qty[] weight[] rotation[] top[] bottom[]
 
 
