@@ -1,32 +1,27 @@
 logpath = './log'
-container_size = [50,100,50]
 
-# config for palette height, and margin of error %, prefer flat to back, heaviest on bottom
-
-# container dimensions are width, height, depth
-
-# package data is label, quantity, weight, w,h,d, v, bools for palette, whether the package can be rotated, tipped on its side, whether it can have something on top of it, and whether it can be stacked on something else
-
-# retrieve list of objects
-# if q>1, explode
-
-# sort list by volume, weight, and floorlocked
-
-# make columns with the least wasted volume out of objects
-
-# column data: objects and relative positions
-
-# arrange columns against back wall
+import sys
+import base64
 
 import cgi
 import cgitb
+
+from io import BytesIO
+
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from OpenGL.GLUT import *
+
+from PIL import Image
+from PIL import ImageOps
+
+
 cgitb.enable(display=0,logdir=logpath)
 postdata = cgi.FieldStorage()
-
-import matplotlib.pyplot as plt
-import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
-
+container_size = [50,100,50]
+width, height = 640, 480
+packages = []
+containers = []
 
 class Zone:
     def __init__(self,px,pz,py,sx,sz,sy,f=False):
@@ -40,20 +35,10 @@ class Zone:
         self.z = sz
         self.y = sy
         self.floor=f
+
     def doesfit(self,xs,zs,ys):
-#        return (xs < self.x and zs < self.z and ys < self.y)
-        #print("Testing fit: ")
-        if xs > self.x:
-            #print("x{0} doesn't fit into {1}<br/>".format(xs,self.x))
-            return False
-        if zs > self.z:
-            #print("z{0} doesn't fit into {1}<br/>".format(zs,self.z))
-            return False
-        if ys > self.y:
-            #print("y{0} doesn't fit into {1}<br/>".format(ys,self.y))
-            return False
-        #print("Fit!<br/>")
-        return True
+        return xs <= self.x and ys <= self.y and zs <= self.z
+
     def subs(self,xs,zs):
         s = []
         if (self.x-xs > 1.0):
@@ -64,7 +49,6 @@ class Zone:
             s.append(Zone(self.posx,self.posz+zs,self.posy,xs,self.z-zs,self.y,self.floor))
         return s
             
-
 class Package:
     def __init__(self,name,l,w,h,m,above,below,rotation):
         self.name = name
@@ -97,8 +81,8 @@ class Package:
             self.z = self.x
             self.x = c
             self.rotated = not self.rotated
+
     def verts(self):
-        #return ((self.posx,self.posy,self.posz),(self.posx,self.posy,self.posz+self.z),(self.posx+self.x,self.posy,self.posz+self.z),(self.posx,self.posy,self.posz+self.z),(self.posx,self.posy+self.y,self.posz),(self.posx,self.posy+self.y,self.posz+self.z),(self.posx+self.x,self.posy+self.y,self.posz+self.z),(self.posx,self.posy+self.y,self.posz+self.z))
         return [[   self.posx,          self.posy,          self.posz           ],
                 [   self.posx,          self.posy,          self.posz+self.z    ],
                 [   self.posx+self.x,   self.posy,          self.posz+self.z    ],
@@ -108,47 +92,17 @@ class Package:
                 [   self.posx+self.x,   self.posy+self.y,   self.posz+self.z    ],
                 [   self.posx+self.x,   self.posy+self.y,   self.posz           ]]
 
-        
-
 class Container:
     def __init__(self,x,z,h):
-        #print("Making zone from container<br/>")
-
         self.zone = Zone(0,0,0,x,z,h,True)
         self.packages = []
+
     def reportefficiency(self):
         cv = self.zone.x*self.zone.y*self.zone.z
         v = 0
         for p in self.packages:
             v = v + p.v
-        #print("Container efficiency: {0}<br/>".format(v/cv))
         return v/cv
-    def render(self):
-        pass
-
-packages = []
-
-#initialize package list from POST data
-container_size[0] = float(postdata.getvalue('cwidth'))
-container_size[1] = float(postdata.getvalue('cdepth'))
-container_size[2] = float(postdata.getvalue('cheight'))
-for i in range(len(postdata.getvalue('name[]'))):
-    name = postdata.getvalue('name[]')[i]
-    l = float(postdata.getvalue('length[]')[i])
-    w = float(postdata.getvalue('width[]')[i])
-    h = float(postdata.getvalue('height[]')[i])
-    m = float(postdata.getvalue('weight[]')[i])
-    above = postdata.getvalue('top[]')[i] == 'checked'
-    below = postdata.getvalue('bottom[]')[i] == 'checked'
-    rotation = postdata.getvalue('rotation[]')[i] == 'checked'
-    
-    for j in range(int(postdata.getvalue('qty[]')[i])):
-        p = Package(name,l,w,h,m,above,below,rotation)
-        packages.append(p)
-
-#sort packages by bulkiness
-packages.sort()
-
 
 def fitpackagesintozone(packages,zone):
     subzones = []
@@ -181,53 +135,6 @@ def fitpackagesintozone(packages,zone):
     for s in subzones:
         fitpackagesintozone(packages,s)
 
-#print ("Placing {0} packages<br/>".format(len(packages)))
-containers = []
-while True:
-    if len(packages) < 1:
-        break
-    containers.append(Container(container_size[0],container_size[1],container_size[2]))
-    #print("Made container #{0} with dimensions {1}x{2}x{3}<br/>".format(len(containers),container_size[0],container_size[1],container_size[2]))
-    fitpackagesintozone(packages,containers[-1].zone)
-    placed = []
-    for i in range(len(packages)):
-        if packages[i].placed:
-            placed.append(i)
-    for i in reversed(placed):
-        containers[-1].packages.append(packages.pop(i))
-    if len(containers[-1].packages) < 1:
-        print("No packages remaining fit in container<br/>")
-        containers.pop(-1)
-        #for p in packages:
-            #print("{0}<br/>".format(p))
-        break
-    containers[-1].reportefficiency()
-    containers[-1].render()
-    #print("{0} packages placed. {1} remain.</br>".format(len(containers[-1].packages),len(packages)),flush=True)
-    
- 
-
-from OpenGL.GL import *
-from OpenGL.GLU import *
-from OpenGL.GLUT import *
-
-from PIL import Image
-from PIL import ImageOps
-
-import sys
-import base64
-
-from OpenGL.GL import *
-from OpenGL.GLU import *
-from OpenGL.GLUT import *
-
-from PIL import Image
-from PIL import ImageOps
-
-import sys
-
-width, height = 640, 480
-
 def init():
     glutInit(sys.argv)
 
@@ -248,7 +155,6 @@ def setcamera(w,h,d):
     glLoadIdentity()
     q = max(w,h,d) * 1.5
     gluLookAt(q, q, q, w*0.5, h*0.5, d*0.5, 0.0, 1.0, 0.0)
-    
     
 def drawverts(v,unlocked,above,below):
     glPolygonOffset(1,1)
@@ -371,24 +277,18 @@ def render(c):
 
     glFlush()
 
-from io import BytesIO
-
 def renderimg(c):
     render(c)
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1)
     data = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
     image = Image.frombytes("RGBA", (width, height), data)
-    image = ImageOps.flip(image) # in my case image is flipped top-bottom for some reason
+    image = ImageOps.flip(image)
     buffer = BytesIO()
     image.save(buffer,format='PNG')
     im_data = base64.b64encode(buffer.getvalue())
     
     return im_data.decode()
-    
-    #img_tag='<img src="data:image/png;base64,{0}">'.format(im_data.decode())
-    #print(img_tag)
-
 
 def outputjson():
     print ('Content-type: application/json\n')
@@ -457,6 +357,51 @@ def outputhtml():
         print("<br/>")
     print ('</body></html>')
 
+# get container size from POST data
+container_size[0] = float(postdata.getvalue('cwidth'))
+container_size[1] = float(postdata.getvalue('cdepth'))
+container_size[2] = float(postdata.getvalue('cheight'))
 
+# get package details from POST data
+for i in range(len(postdata.getvalue('name[]'))):
+    name = postdata.getvalue('name[]')[i]
+    l = float(postdata.getvalue('length[]')[i])
+    w = float(postdata.getvalue('width[]')[i])
+    h = float(postdata.getvalue('height[]')[i])
+    m = float(postdata.getvalue('weight[]')[i])
+    above = postdata.getvalue('top[]')[i] == 'checked'
+    below = postdata.getvalue('bottom[]')[i] == 'checked'
+    rotation = postdata.getvalue('rotation[]')[i] == 'checked'
+    
+    # if many packages are included on the same line, make them separate entries
+    for j in range(int(postdata.getvalue('qty[]')[i])):
+        p = Package(name,l,w,h,m,above,below,rotation)
+        packages.append(p)
+
+# sort packages by bulkiness
+packages.sort()
+
+# attempt to fit packages in a new container
+while True:
+    if len(packages) < 1:
+        break
+    containers.append(Container(container_size[0],container_size[1],container_size[2]))
+    fitpackagesintozone(packages,containers[-1].zone)
+    
+    # remove packages that have been successfully placed from the orphan list
+    placed = []
+    for i in range(len(packages)):
+        if packages[i].placed:
+            placed.append(i)
+    for i in reversed(placed):
+        containers[-1].packages.append(packages.pop(i))
+        
+    # if we get to the end and no more packages have been placed, it's time to stop trying
+    if len(containers[-1].packages) < 1:
+        containers.pop(-1)
+        break
+# init render settings
 init()
+
+# final output
 outputjson()
