@@ -95,14 +95,21 @@ class Package:
         return other.q < self.q
         
     def rotate(self):
-        if rotation:
-            c = z
-            z = x
-            x = c
-            rotated = True
+        if self.rotation:
+            c = self.z
+            self.z = self.x
+            self.x = c
+            self.rotated = not self.rotated
     def verts(self):
         #return ((self.posx,self.posy,self.posz),(self.posx,self.posy,self.posz+self.z),(self.posx+self.x,self.posy,self.posz+self.z),(self.posx,self.posy,self.posz+self.z),(self.posx,self.posy+self.y,self.posz),(self.posx,self.posy+self.y,self.posz+self.z),(self.posx+self.x,self.posy+self.y,self.posz+self.z),(self.posx,self.posy+self.y,self.posz+self.z))
-        return [[self.posx,self.posy,self.posz],[self.posx,self.posy,self.posz+self.z],[self.posx+self.x,self.posy,self.posz+self.z],[self.posx,self.posy,self.posz+self.z],[self.posx,self.posy+self.y,self.posz],[self.posx,self.posy+self.y,self.posz+self.z],[self.posx+self.x,self.posy+self.y,self.posz+self.z],[self.posx,self.posy+self.y,self.posz+self.z]]
+        return [[   self.posx,          self.posy,          self.posz           ],
+                [   self.posx,          self.posy,          self.posz+self.z    ],
+                [   self.posx+self.x,   self.posy,          self.posz+self.z    ],
+                [   self.posx+self.x,   self.posy,          self.posz           ],
+                [   self.posx,          self.posy+self.y,   self.posz           ],
+                [   self.posx,          self.posy+self.y,   self.posz+self.z    ],
+                [   self.posx+self.x,   self.posy+self.y,   self.posz+self.z    ],
+                [   self.posx+self.x,   self.posy+self.y,   self.posz           ]]
 
         
 
@@ -203,6 +210,163 @@ while True and sanity < 10:
     containers[-1].render()
     #print("{0} packages placed. {1} remain.</br>".format(len(containers[-1].packages),len(packages)),flush=True)
     
+ 
+
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from OpenGL.GLUT import *
+
+from PIL import Image
+from PIL import ImageOps
+
+import sys
+import base64
+
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from OpenGL.GLUT import *
+
+from PIL import Image
+from PIL import ImageOps
+
+import sys
+
+width, height = 640, 480
+
+def init():
+    glutInit(sys.argv)
+
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)
+    glutInitWindowSize(width, height)
+    glutCreateWindow(b"OpenGL Offscreen")
+    glutHideWindow()
+
+    glEnable(GL_DEPTH_TEST)
+    glClearColor(0.0, 0.0, 0.2, 1.0)
+    glViewport(0, 0, width, height)
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    gluPerspective(45.0,width/height,0.5,500.0)
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+    gluLookAt(150.0, 150.0, 150.0, 25.0, 25.0, 50.0, 0.0, 1.0, 0.0)
+    
+def drawverts(v):
+    glPolygonOffset(1,1)
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL)
+    glEnable(GL_POLYGON_OFFSET_FILL)
+    glBegin(GL_QUADS)
+
+    glColor4d(0.5,0.4,0.0,1.0)
+    glVertex3dv(v[1])
+    glColor4d(0.5,1.0,0.0,1.0)
+    glVertex3dv(v[5])
+    glColor4d(0.5,1.0,0.0,1.0)
+    glVertex3dv(v[6])
+    glColor4d(0.5,0.4,0.0,1.0)
+    glVertex3dv(v[2])
+
+    glColor4d(0.0,0.4,0.0,1.0)
+    glVertex3dv(v[3])
+    glColor4d(0.0,1.0,0.0,1.0)
+    glVertex3dv(v[7])
+    glColor4d(0.5,1.0,0.0,1.0)
+    glVertex3dv(v[6])
+    glColor4d(0.5,0.4,0.0,1.0)
+    glVertex3dv(v[2])
+    
+    glColor4d(0.5,1.0,0.0,1.0)
+    glVertex3dv(v[6])
+    glColor4d(0.0,1.0,0.0,1.0)
+    glVertex3dv(v[7])
+    glColor4d(0.0,1.0,0.0,1.0)
+    glVertex3dv(v[4])
+    glColor4d(0.5,1.0,0.0,1.0)
+    glVertex3dv(v[5])
+
+    glEnd()
+
+    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE)
+    glDisable(GL_POLYGON_OFFSET_FILL)
+    glColor4f(0,0,0,1)
+    glBegin(GL_QUADS)
+
+    glVertex3dv(v[1])
+    glVertex3dv(v[5])
+    glVertex3dv(v[6])
+    glVertex3dv(v[2])
+
+    glVertex3dv(v[3])
+    glVertex3dv(v[7])
+    glVertex3dv(v[6])
+    glVertex3dv(v[2])
+    
+    glVertex3dv(v[6])
+    glVertex3dv(v[7])
+    glVertex3dv(v[4])
+    glVertex3dv(v[5])
+
+    glEnd()
+    
+
+
+def render(c):
+
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+    
+    glPolygonOffset(0,0)
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL)
+    glEnable(GL_POLYGON_OFFSET_FILL)
+    # draw container
+    
+    glBegin(GL_QUADS)
+
+    glColor4d(1.0,0.0,0.0,1.0)
+    glVertex3d(0,0,c.zone.z)
+    glVertex3d(0,c.zone.y,c.zone.z)
+    glColor4d(0.3,0.0,0.0,1.0)
+    glVertex3d(0,c.zone.y,0)
+    glVertex3d(0,0,0)
+    
+    glColor4d(0.3,0.0,0.0,1.0)
+    glVertex3d(0,0,0)
+    glVertex3d(0,c.zone.y,0)
+    glVertex3d(c.zone.x,c.zone.y,0)
+    glVertex3d(c.zone.x,0,0)
+
+    glColor4d(0.3,0.0,0.0,1.0)
+    glVertex3d(0,0,0)
+    glVertex3d(c.zone.x,0,0)
+    glColor4d(1.0,0.0,0.0,1.0)
+    glVertex3d(c.zone.x,0,c.zone.z)
+    glVertex3d(0,0,c.zone.z)
+
+    glEnd()
+
+
+    for p in c.packages:
+        drawverts(p.verts())
+
+    glFlush()
+
+from io import BytesIO
+
+def renderimg(c):
+    render(c)
+
+    glPixelStorei(GL_PACK_ALIGNMENT, 1)
+    data = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
+    image = Image.frombytes("RGBA", (width, height), data)
+    image = ImageOps.flip(image) # in my case image is flipped top-bottom for some reason
+    buffer = BytesIO()
+    image.save(buffer,format='PNG')
+    im_data = base64.b64encode(buffer.getvalue())
+    img_tag='<img src="data:image/png;base64,{0}">'.format(im_data.decode())
+    print(img_tag)
+
+
+init()
+
 cn = 0
 for c in containers:
     cn += 1
@@ -212,66 +376,5 @@ for c in containers:
     for p in c.packages:
         print("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td>{6}</td><td>{7}</td><td>{8}</td><td>{9}</td></tr>".format(p.name,p.posx,p.posz,p.posy,p.rotated,p.x,p.z,p.y,p.above,p.below))
     print("</table>")
-    
-
-width, height = 300, 300
-
-def init():
-    glClearColor(0.5, 0.5, 1.0, 1.0)
-    glColor(0.0, 1.0, 0.0)
-    gluOrtho2D(-1.0, 1.0, -1.0, 1.0)
-    glViewport(0, 0, width, height)
-
-def render():
-
-    glClear(GL_COLOR_BUFFER_BIT)
-
-    # draw xy axis with arrows
-    glBegin(GL_LINES)
-
-    # x
-    glVertex2d(-1, 0)
-    glVertex2d(1, 0)
-    glVertex2d(1, 0)
-    glVertex2d(0.95, 0.05)
-    glVertex2d(1, 0)
-    glVertex2d(0.95, -0.05)
-
-    # y
-    glVertex2d(0, -1)
-    glVertex2d(0, 1)
-    glVertex2d(0, 1)
-    glVertex2d(0.05, 0.95)
-    glVertex2d(0, 1)
-    glVertex2d(-0.05, 0.95)
-
-    glEnd()
-
-    glFlush()
-
-
-def draw():
-    render()
-    glutSwapBuffers()
-
-def main():
-    glutInit(sys.argv)
-
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)
-    glutInitWindowSize(300, 300)
-    glutCreateWindow(b"OpenGL Offscreen")
-    glutHideWindow()
-
-    init()
-    render()
-
-    glPixelStorei(GL_PACK_ALIGNMENT, 1)
-    data = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
-    image = Image.frombytes("RGBA", (width, height), data)
-    image = ImageOps.flip(image) # in my case image is flipped top-bottom for some reason
-    image.save('glutout.png', 'PNG')
-
-    #glutDisplayFunc(draw)
-    #glutMainLoop()
-
-main()
+    renderimg(c)
+    print("<br/>")
