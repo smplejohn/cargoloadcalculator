@@ -24,25 +24,38 @@
 logpath = './log'
 
 import sys
-import base64
 
+
+# for handling POST data
 import cgi
 import cgitb
 
+# for encoding/embedding images
+import base64
 from io import BytesIO
 
+# for rendering containers
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
+# for capturing the renders without writing to disk
 from PIL import Image
 from PIL import ImageOps
 
-
+# Log to file instead of publishing errors and code to the public
 cgitb.enable(display=0,logdir=logpath)
+
+# capture POST data
 postdata = cgi.FieldStorage()
+
+# default size
 container_size = [50,100,50]
+
+# image render size
 width, height = 640, 480
+
+# lists of all packages (to start) and containers
 packages = []
 containers = []
 
