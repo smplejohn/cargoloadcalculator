@@ -239,12 +239,16 @@ def init():
     glEnable(GL_DEPTH_TEST)
     glClearColor(1.0, 1.0, 1.0, 1.0)
     glViewport(0, 0, width, height)
+    
+def setcamera(w,h,d):
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     gluPerspective(45.0,width/height,0.5,500.0)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    gluLookAt(150.0, 150.0, 150.0, 25.0, 25.0, 50.0, 0.0, 1.0, 0.0)
+    q = max(w,h,d) * 1.5
+    gluLookAt(q, q, q, w*0.5, h*0.5, d*0.5, 0.0, 1.0, 0.0)
+    
     
 def drawverts(v,unlocked,above,below):
     glPolygonOffset(1,1)
@@ -280,9 +284,9 @@ def drawverts(v,unlocked,above,below):
     topcolor = [0.0,0.0,0.0,1.0]
     bottomcolor = [0.0,0.0,0.0,1.0]
     if not above:
-        topcolor = [1.0,0.0,0.0,1.0]
+        topcolor = [1.0,0.0,1.0,1.0]
     if not below:
-        bottomcolor = [1.0,0.0,0.0,1.0]
+        bottomcolor = [1.0,0.0,1.0,1.0]
 
 
     glPolygonMode(GL_FRONT_AND_BACK,GL_LINE)
@@ -357,7 +361,7 @@ def drawcontainer(c):
     
 
 def render(c):
-
+    setcamera(c.zone.x,c.zone.y,c.zone.z)
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
     
     drawcontainer(c)
