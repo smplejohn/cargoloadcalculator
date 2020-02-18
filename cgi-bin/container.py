@@ -102,7 +102,14 @@ class Package:
             rotated = True
     def verts(self):
         #return ((self.posx,self.posy,self.posz),(self.posx,self.posy,self.posz+self.z),(self.posx+self.x,self.posy,self.posz+self.z),(self.posx,self.posy,self.posz+self.z),(self.posx,self.posy+self.y,self.posz),(self.posx,self.posy+self.y,self.posz+self.z),(self.posx+self.x,self.posy+self.y,self.posz+self.z),(self.posx,self.posy+self.y,self.posz+self.z))
-        return [[self.posx,self.posy,self.posz],[self.posx,self.posy,self.posz+self.z],[self.posx+self.x,self.posy,self.posz+self.z],[self.posx,self.posy,self.posz+self.z],[self.posx,self.posy+self.y,self.posz],[self.posx,self.posy+self.y,self.posz+self.z],[self.posx+self.x,self.posy+self.y,self.posz+self.z],[self.posx,self.posy+self.y,self.posz+self.z]]
+        return [[   self.posx,          self.posy,          self.posz           ],
+                [   self.posx,          self.posy,          self.posz+self.z    ],
+                [   self.posx+self.x,   self.posy,          self.posz+self.z    ],
+                [   self.posx+self.x,   self.posy,          self.posz           ],
+                [   self.posx,          self.posy+self.y,   self.posz           ],
+                [   self.posx,          self.posy+self.y,   self.posz+self.z    ],
+                [   self.posx+self.x,   self.posy+self.y,   self.posz+self.z    ],
+                [   self.posx+self.x,   self.posy+self.y,   self.posz           ]]
 
         
 
@@ -236,34 +243,109 @@ import sys
 width, height = 640, 480
 
 def init():
-    glClearColor(0.0, 0.0, 0.5, 1.0)
-    gluOrtho2D(-1.0, 1.0, -1.0, 1.0)
+    glEnable(GL_DEPTH_TEST)
+    glClearColor(0.0, 0.0, 0.2, 1.0)
     glViewport(0, 0, width, height)
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    gluPerspective(45.0,width/height,0.5,500.0)
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+    gluLookAt(150.0, 150.0, 150.0, 25.0, 25.0, 50.0, 0.0, 1.0, 0.0)
+    
+def drawverts(v):
+    glPolygonOffset(1,1)
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL)
+    glEnable(GL_POLYGON_OFFSET_FILL)
+    glBegin(GL_QUADS)
+
+    glColor4d(0.5,0.4,0.0,1.0)
+    glVertex3dv(v[1])
+    glColor4d(0.5,1.0,0.0,1.0)
+    glVertex3dv(v[5])
+    glColor4d(0.5,1.0,0.0,1.0)
+    glVertex3dv(v[6])
+    glColor4d(0.5,0.4,0.0,1.0)
+    glVertex3dv(v[2])
+
+    glColor4d(0.0,0.4,0.0,1.0)
+    glVertex3dv(v[3])
+    glColor4d(0.0,1.0,0.0,1.0)
+    glVertex3dv(v[7])
+    glColor4d(0.5,1.0,0.0,1.0)
+    glVertex3dv(v[6])
+    glColor4d(0.5,0.4,0.0,1.0)
+    glVertex3dv(v[2])
+    
+    glColor4d(0.5,1.0,0.0,1.0)
+    glVertex3dv(v[6])
+    glColor4d(0.0,1.0,0.0,1.0)
+    glVertex3dv(v[7])
+    glColor4d(0.0,1.0,0.0,1.0)
+    glVertex3dv(v[4])
+    glColor4d(0.5,1.0,0.0,1.0)
+    glVertex3dv(v[5])
+
+    glEnd()
+
+    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE)
+    glDisable(GL_POLYGON_OFFSET_FILL)
+    glColor4f(0,0,0,1)
+    glBegin(GL_QUADS)
+
+    glVertex3dv(v[1])
+    glVertex3dv(v[5])
+    glVertex3dv(v[6])
+    glVertex3dv(v[2])
+
+    glVertex3dv(v[3])
+    glVertex3dv(v[7])
+    glVertex3dv(v[6])
+    glVertex3dv(v[2])
+    
+    glVertex3dv(v[6])
+    glVertex3dv(v[7])
+    glVertex3dv(v[4])
+    glVertex3dv(v[5])
+
+    glEnd()
 
 def render():
 
-    glClear(GL_COLOR_BUFFER_BIT)
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+    
+    v = containers[0].packages[0].verts()
 
-    # draw xy axis with arrows
-    glBegin(GL_LINES)
+    # draw container
+    c = containers[25]
+    
+    glBegin(GL_QUADS)
 
-    # x
-    glVertex2d(-1, 0)
-    glVertex2d(1, 0)
-    glVertex2d(1, 0)
-    glVertex2d(0.95, 0.05)
-    glVertex2d(1, 0)
-    glVertex2d(0.95, -0.05)
+    glColor4d(1.0,0.0,0.0,1.0)
+    glVertex3d(0,0,c.zone.z)
+    glVertex3d(0,c.zone.y,c.zone.z)
+    glColor4d(0.3,0.0,0.0,1.0)
+    glVertex3d(0,c.zone.y,0)
+    glVertex3d(0,0,0)
+    
+    glColor4d(0.3,0.0,0.0,1.0)
+    glVertex3d(0,0,0)
+    glVertex3d(0,c.zone.y,0)
+    glVertex3d(c.zone.x,c.zone.y,0)
+    glVertex3d(c.zone.x,0,0)
 
-    # y
-    glVertex2d(0, -1)
-    glVertex2d(0, 1)
-    glVertex2d(0, 1)
-    glVertex2d(0.05, 0.95)
-    glVertex2d(0, 1)
-    glVertex2d(-0.05, 0.95)
+    glColor4d(0.3,0.0,0.0,1.0)
+    glVertex3d(0,0,0)
+    glVertex3d(c.zone.x,0,0)
+    glColor4d(1.0,0.0,0.0,1.0)
+    glVertex3d(c.zone.x,0,c.zone.z)
+    glVertex3d(0,0,c.zone.z)
 
     glEnd()
+
+
+    for p in c.packages:
+        drawverts(p.verts())
 
     glFlush()
 
@@ -276,7 +358,7 @@ def main():
     glutInit(sys.argv)
 
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)
-    glutInitWindowSize(300, 300)
+    glutInitWindowSize(width, height)
     glutCreateWindow(b"OpenGL Offscreen")
     glutHideWindow()
 
