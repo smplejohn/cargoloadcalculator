@@ -21,10 +21,8 @@
 # bottom[]  - Array of flags for whether this package may have others below it
 # rotation[]- Array of flags for whether this package may be rotated in space or not    
 
-logpath = './log'
-
+# Because everything uses sys
 import sys
-
 
 # for handling POST data
 import cgi
@@ -43,11 +41,8 @@ from OpenGL.GLUT import *
 from PIL import Image
 from PIL import ImageOps
 
-# Log to file instead of publishing errors and code to the public
-cgitb.enable(display=0,logdir=logpath)
-
-# capture POST data
-postdata = cgi.FieldStorage()
+# Set this to your preferred log destination
+logpath = './log'
 
 # default size
 container_size = [50,100,50]
@@ -408,6 +403,14 @@ def outputhtml():
         print('<img src="data:image/png;base64,{0}">'.format(renderimg(c)))
         print("<br/>")
     print ('</body></html>')
+
+# ***** MAIN CODE START *****
+
+# Log to file instead of publishing errors and code to the public
+cgitb.enable(display=0,logdir=logpath)
+
+# capture POST data
+postdata = cgi.FieldStorage()
 
 # get container size from POST data
 container_size[0] = float(postdata.getvalue('cwidth'))
