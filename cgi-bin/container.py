@@ -95,11 +95,11 @@ class Package:
         return other.q < self.q
         
     def rotate(self):
-        if rotation:
-            c = z
-            z = x
-            x = c
-            rotated = True
+        if self.rotation:
+            c = self.z
+            self.z = self.x
+            self.x = c
+            self.rotated = not self.rotated
     def verts(self):
         #return ((self.posx,self.posy,self.posz),(self.posx,self.posy,self.posz+self.z),(self.posx+self.x,self.posy,self.posz+self.z),(self.posx,self.posy,self.posz+self.z),(self.posx,self.posy+self.y,self.posz),(self.posx,self.posy+self.y,self.posz+self.z),(self.posx+self.x,self.posy+self.y,self.posz+self.z),(self.posx,self.posy+self.y,self.posz+self.z))
         return [[   self.posx,          self.posy,          self.posz           ],
@@ -210,16 +210,7 @@ while True and sanity < 10:
     containers[-1].render()
     #print("{0} packages placed. {1} remain.</br>".format(len(containers[-1].packages),len(packages)),flush=True)
     
-cn = 0
-for c in containers:
-    cn += 1
-    print("<h3>Container #{0} {1}% space filled</h3>".format(cn,c.reportefficiency()*100))
-    print("W: {0} D: {1} H: {2}<br/>".format(container_size[0],container_size[1],container_size[2]))
-    print("<table><tr><th>Name</th><th>X</th><th>Z</th><th>H</th><th>Rotated</th><th>Width</th><th>Depth</th><th>Height</th><th>Stackable (Above)</th><th>Stackable (Below)</th></tr>")
-    for p in c.packages:
-        print("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td>{6}</td><td>{7}</td><td>{8}</td><td>{9}</td></tr>".format(p.name,p.posx,p.posz,p.posy,p.rotated,p.x,p.z,p.y,p.above,p.below))
-    print("</table>")
-    
+ 
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -243,6 +234,13 @@ import sys
 width, height = 640, 480
 
 def init():
+    glutInit(sys.argv)
+
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)
+    glutInitWindowSize(width, height)
+    glutCreateWindow(b"OpenGL Offscreen")
+    glutHideWindow()
+
     glEnable(GL_DEPTH_TEST)
     glClearColor(0.0, 0.0, 0.2, 1.0)
     glViewport(0, 0, width, height)
@@ -309,15 +307,17 @@ def drawverts(v):
     glVertex3dv(v[5])
 
     glEnd()
+    
 
-def render():
+
+def render(c):
 
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
     
-    v = containers[0].packages[0].verts()
-
+    glPolygonOffset(0,0)
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL)
+    glEnable(GL_POLYGON_OFFSET_FILL)
     # draw container
-    c = containers[25]
     
     glBegin(GL_QUADS)
 
@@ -349,32 +349,32 @@ def render():
 
     glFlush()
 
+from io import BytesIO
 
-def draw():
-    render()
-    glutSwapBuffers()
-
-def main():
-    glutInit(sys.argv)
-
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)
-    glutInitWindowSize(width, height)
-    glutCreateWindow(b"OpenGL Offscreen")
-    glutHideWindow()
-
-    init()
-    render()
+def renderimg(c):
+    render(c)
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1)
     data = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
     image = Image.frombytes("RGBA", (width, height), data)
     image = ImageOps.flip(image) # in my case image is flipped top-bottom for some reason
-    image.save('glutout.png', 'PNG')
-    data_uri= base64.b64encode(open('glutout.png','rb').read()).decode('utf-8')
-    img_tag='<img src="data:image/png;base64,{0}">'.format(data_uri)
+    buffer = BytesIO()
+    image.save(buffer,format='PNG')
+    im_data = base64.b64encode(buffer.getvalue())
+    img_tag='<img src="data:image/png;base64,{0}">'.format(im_data.decode())
     print(img_tag)
 
-    #glutDisplayFunc(draw)
-    #glutMainLoop()
 
-main()
+init()
+
+cn = 0
+for c in containers:
+    cn += 1
+    print("<h3>Container #{0} {1}% space filled</h3>".format(cn,c.reportefficiency()*100))
+    print("W: {0} D: {1} H: {2}<br/>".format(container_size[0],container_size[1],container_size[2]))
+    print("<table><tr><th>Name</th><th>X</th><th>Z</th><th>H</th><th>Rotated</th><th>Width</th><th>Depth</th><th>Height</th><th>Stackable (Above)</th><th>Stackable (Below)</th></tr>")
+    for p in c.packages:
+        print("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td>{6}</td><td>{7}</td><td>{8}</td><td>{9}</td></tr>".format(p.name,p.posx,p.posz,p.posy,p.rotated,p.x,p.z,p.y,p.above,p.below))
+    print("</table>")
+    renderimg(c)
+    print("<br/>")
