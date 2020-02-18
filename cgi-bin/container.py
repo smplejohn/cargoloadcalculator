@@ -455,4 +455,4 @@ def outputhtml():
 
 
 init()
-outputhtml()
+outputjson()
