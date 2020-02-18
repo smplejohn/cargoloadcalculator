@@ -27,9 +27,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 
-print ('Content-type: text/html')
-print ('')
-print ('<html><body>')
+print ('Content-type: application/json\n')
 
 class Zone:
     def __init__(self,px,pz,py,sx,sz,sy,f=False):
@@ -186,9 +184,7 @@ def fitpackagesintozone(packages,zone):
 
 #print ("Placing {0} packages<br/>".format(len(packages)))
 containers = []
-sanity = 0
-while True and sanity < 10:
-    #sanity += 1
+while True:
     if len(packages) < 1:
         break
     containers.append(Container(container_size[0],container_size[1],container_size[2]))
@@ -238,7 +234,7 @@ def init():
 
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)
     glutInitWindowSize(width, height)
-    glutCreateWindow(b"OpenGL Offscreen")
+    glutCreateWindow("Containers Render Window")
     glutHideWindow()
 
     glEnable(GL_DEPTH_TEST)
@@ -361,20 +357,62 @@ def renderimg(c):
     buffer = BytesIO()
     image.save(buffer,format='PNG')
     im_data = base64.b64encode(buffer.getvalue())
-    img_tag='<img src="data:image/png;base64,{0}">'.format(im_data.decode())
-    print(img_tag)
+    
+    return im_data.decode()
+    
+    #img_tag='<img src="data:image/png;base64,{0}">'.format(im_data.decode())
+    #print(img_tag)
 
 
 init()
 
+print('{')
+
+
 cn = 0
 for c in containers:
     cn += 1
-    print("<h3>Container #{0} {1}% space filled</h3>".format(cn,c.reportefficiency()*100))
-    print("W: {0} D: {1} H: {2}<br/>".format(container_size[0],container_size[1],container_size[2]))
-    print("<table><tr><th>Name</th><th>X</th><th>Z</th><th>H</th><th>Rotated</th><th>Width</th><th>Depth</th><th>Height</th><th>Stackable (Above)</th><th>Stackable (Below)</th></tr>")
+    print('\t"container" : {')
+    print('\t\t"name" : "Container {0}"'.format(cn))
+    print('\t\t"width" : "{0}"'.format(c.zone.x))
+    print('\t\t"depth" : "{0}"'.format(c.zone.z))
+    print('\t\t"height" : "{0}"'.format(c.zone.y))
+    print('\t\t"efficiency" : "{0}"'.format(c.reportefficiency()))
+    print('\t\t"imagedata" : "{0}"'.format(renderimg(c)))
     for p in c.packages:
-        print("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td>{6}</td><td>{7}</td><td>{8}</td><td>{9}</td></tr>".format(p.name,p.posx,p.posz,p.posy,p.rotated,p.x,p.z,p.y,p.above,p.below))
-    print("</table>")
-    renderimg(c)
-    print("<br/>")
+        print('\t\t"package" : {')
+        print('\t\t\t"name" : "{0}"'.format(p.name))
+        print('\t\t\t"width" : "{0}"'.format(p.x))
+        print('\t\t\t"height" : "{0}"'.format(p.y))
+        print('\t\t\t"depth" : "{0}"'.format(p.z))
+        print('\t\t\t"position_x" : "{0}"'.format(p.posx))
+        print('\t\t\t"position_y" : "{0}"'.format(p.posy))
+        print('\t\t\t"position_z" : "{0}"'.format(p.posz))
+        print('\t\t\t"weight" : "{0}"'.format(p.m))
+        print('\t\t\t"volume" : "{0}"'.format(p.v))
+        print('\t\t\t"rotatable" : "{0}"'.format(p.rotation))
+        print('\t\t\t"rotated" : "{0}"'.format(p.rotated))
+        print('\t\t\t"items_ontop_ok" : "{0}"'.format(p.above))
+        print('\t\t\t"items_below_ok" : "{0}"'.format(p.below))
+        print('\t\t}')
+    print('\t}')
+if len(packages) > 0:
+    print('\t"orphan_packages" : {')
+    for p in packages:
+        print('\t\t"package" : {')
+        print('\t\t\t"name" : "{0}"'.format(p.name))
+        print('\t\t\t"width" : "{0}"'.format(p.x))
+        print('\t\t\t"height" : "{0}"'.format(p.y))
+        print('\t\t\t"depth" : "{0}"'.format(p.z))
+        print('\t\t\t"position_x" : "{0}"'.format(p.posx))
+        print('\t\t\t"position_y" : "{0}"'.format(p.posy))
+        print('\t\t\t"position_z" : "{0}"'.format(p.posz))
+        print('\t\t\t"weight" : "{0}"'.format(p.m))
+        print('\t\t\t"volume" : "{0}"'.format(p.v))
+        print('\t\t\t"rotatable" : "{0}"'.format(p.rotation))
+        print('\t\t\t"rotated" : "{0}"'.format(p.rotated))
+        print('\t\t\t"items_ontop_ok" : "{0}"'.format(p.above))
+        print('\t\t\t"items_below_ok" : "{0}"'.format(p.below))
+        print('\t\t}')
+    print('\t}')
+print('}')
