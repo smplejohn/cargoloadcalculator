@@ -27,7 +27,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 
-print ('Content-type: application/json\n')
 
 class Zone:
     def __init__(self,px,pz,py,sx,sz,sy,f=False):
@@ -238,7 +237,7 @@ def init():
     glutHideWindow()
 
     glEnable(GL_DEPTH_TEST)
-    glClearColor(0.0, 0.0, 0.2, 1.0)
+    glClearColor(1.0, 1.0, 1.0, 1.0)
     glViewport(0, 0, width, height)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
@@ -247,56 +246,66 @@ def init():
     glLoadIdentity()
     gluLookAt(150.0, 150.0, 150.0, 25.0, 25.0, 50.0, 0.0, 1.0, 0.0)
     
-def drawverts(v):
+def drawverts(v,unlocked,above,below):
     glPolygonOffset(1,1)
     glPolygonMode(GL_FRONT_AND_BACK,GL_FILL)
     glEnable(GL_POLYGON_OFFSET_FILL)
     glBegin(GL_QUADS)
 
-    glColor4d(0.5,0.4,0.0,1.0)
+    if unlocked:
+        glColor4d(0.0,1.0,0.0,0.5)
+    else:
+        glColor4d(0.0,1.0,1.0,0.5)
+
+    #front
     glVertex3dv(v[1])
-    glColor4d(0.5,1.0,0.0,1.0)
     glVertex3dv(v[5])
-    glColor4d(0.5,1.0,0.0,1.0)
     glVertex3dv(v[6])
-    glColor4d(0.5,0.4,0.0,1.0)
     glVertex3dv(v[2])
 
-    glColor4d(0.0,0.4,0.0,1.0)
+    #top
     glVertex3dv(v[3])
-    glColor4d(0.0,1.0,0.0,1.0)
     glVertex3dv(v[7])
-    glColor4d(0.5,1.0,0.0,1.0)
     glVertex3dv(v[6])
-    glColor4d(0.5,0.4,0.0,1.0)
     glVertex3dv(v[2])
     
-    glColor4d(0.5,1.0,0.0,1.0)
+    #side
     glVertex3dv(v[6])
-    glColor4d(0.0,1.0,0.0,1.0)
     glVertex3dv(v[7])
-    glColor4d(0.0,1.0,0.0,1.0)
     glVertex3dv(v[4])
-    glColor4d(0.5,1.0,0.0,1.0)
     glVertex3dv(v[5])
 
     glEnd()
+
+    topcolor = [0.0,0.0,0.0,1.0]
+    bottomcolor = [0.0,0.0,0.0,1.0]
+    if not above:
+        topcolor = [1.0,0.0,0.0,1.0]
+    if not below:
+        bottomcolor = [1.0,0.0,0.0,1.0]
+
 
     glPolygonMode(GL_FRONT_AND_BACK,GL_LINE)
     glDisable(GL_POLYGON_OFFSET_FILL)
     glColor4f(0,0,0,1)
     glBegin(GL_QUADS)
 
+    glColor4dv(bottomcolor)
     glVertex3dv(v[1])
+    glColor4dv(topcolor)
     glVertex3dv(v[5])
     glVertex3dv(v[6])
+    glColor4dv(bottomcolor)
     glVertex3dv(v[2])
 
     glVertex3dv(v[3])
+    glColor4dv(topcolor)
     glVertex3dv(v[7])
     glVertex3dv(v[6])
+    glColor4dv(bottomcolor)
     glVertex3dv(v[2])
     
+    glColor4dv(topcolor)
     glVertex3dv(v[6])
     glVertex3dv(v[7])
     glVertex3dv(v[4])
@@ -304,44 +313,57 @@ def drawverts(v):
 
     glEnd()
     
-
-
-def render(c):
-
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-    
-    glPolygonOffset(0,0)
-    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL)
-    glEnable(GL_POLYGON_OFFSET_FILL)
+def drawcontainer(c):
+    glPolygonOffset(1,1)
+    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE)
+    glDisable(GL_POLYGON_OFFSET_FILL)
     # draw container
     
     glBegin(GL_QUADS)
 
     glColor4d(1.0,0.0,0.0,1.0)
+
     glVertex3d(0,0,c.zone.z)
     glVertex3d(0,c.zone.y,c.zone.z)
-    glColor4d(0.3,0.0,0.0,1.0)
     glVertex3d(0,c.zone.y,0)
     glVertex3d(0,0,0)
     
-    glColor4d(0.3,0.0,0.0,1.0)
+    glVertex3d(c.zone.x,0,c.zone.z)
+    glVertex3d(c.zone.x,c.zone.y,c.zone.z)
+    glVertex3d(c.zone.x,c.zone.y,0)
+    glVertex3d(c.zone.x,0,0)
+
     glVertex3d(0,0,0)
     glVertex3d(0,c.zone.y,0)
     glVertex3d(c.zone.x,c.zone.y,0)
     glVertex3d(c.zone.x,0,0)
 
-    glColor4d(0.3,0.0,0.0,1.0)
+    glVertex3d(0,0,c.zone.z)
+    glVertex3d(0,c.zone.y,c.zone.z)
+    glVertex3d(c.zone.x,c.zone.y,c.zone.z)
+    glVertex3d(c.zone.x,0,c.zone.z)
+
     glVertex3d(0,0,0)
     glVertex3d(c.zone.x,0,0)
-    glColor4d(1.0,0.0,0.0,1.0)
     glVertex3d(c.zone.x,0,c.zone.z)
     glVertex3d(0,0,c.zone.z)
 
-    glEnd()
+    glVertex3d(0,c.zone.y,0)
+    glVertex3d(c.zone.x,c.zone.y,0)
+    glVertex3d(c.zone.x,c.zone.y,c.zone.z)
+    glVertex3d(0,c.zone.y,c.zone.z)
 
+    glEnd()
+    
+
+def render(c):
+
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+    
+    drawcontainer(c)
 
     for p in c.packages:
-        drawverts(p.verts())
+        drawverts(p.verts(),p.rotation,p.above,p.below)
 
     glFlush()
 
@@ -364,55 +386,73 @@ def renderimg(c):
     #print(img_tag)
 
 
+def outputjson():
+    print ('Content-type: application/json\n')
+    print('{')
+    cn = 0
+    for c in containers:
+        cn += 1
+        print('\t"container" : {')
+        print('\t\t"name" : "Container {0}"'.format(cn))
+        print('\t\t"width" : "{0}"'.format(c.zone.x))
+        print('\t\t"depth" : "{0}"'.format(c.zone.z))
+        print('\t\t"height" : "{0}"'.format(c.zone.y))
+        print('\t\t"efficiency" : "{0}"'.format(c.reportefficiency()))
+        print('\t\t"imagedata" : "{0}"'.format(renderimg(c)))
+        for p in c.packages:
+            print('\t\t"package" : {')
+            print('\t\t\t"name" : "{0}"'.format(p.name))
+            print('\t\t\t"width" : "{0}"'.format(p.x))
+            print('\t\t\t"height" : "{0}"'.format(p.y))
+            print('\t\t\t"depth" : "{0}"'.format(p.z))
+            print('\t\t\t"position_x" : "{0}"'.format(p.posx))
+            print('\t\t\t"position_y" : "{0}"'.format(p.posy))
+            print('\t\t\t"position_z" : "{0}"'.format(p.posz))
+            print('\t\t\t"weight" : "{0}"'.format(p.m))
+            print('\t\t\t"volume" : "{0}"'.format(p.v))
+            print('\t\t\t"rotatable" : "{0}"'.format(p.rotation))
+            print('\t\t\t"rotated" : "{0}"'.format(p.rotated))
+            print('\t\t\t"items_ontop_ok" : "{0}"'.format(p.above))
+            print('\t\t\t"items_below_ok" : "{0}"'.format(p.below))
+            print('\t\t}')
+        print('\t}')
+    if len(packages) > 0:
+        print('\t"orphan_packages" : {')
+        for p in packages:
+            print('\t\t"package" : {')
+            print('\t\t\t"name" : "{0}"'.format(p.name))
+            print('\t\t\t"width" : "{0}"'.format(p.x))
+            print('\t\t\t"height" : "{0}"'.format(p.y))
+            print('\t\t\t"depth" : "{0}"'.format(p.z))
+            print('\t\t\t"position_x" : "{0}"'.format(p.posx))
+            print('\t\t\t"position_y" : "{0}"'.format(p.posy))
+            print('\t\t\t"position_z" : "{0}"'.format(p.posz))
+            print('\t\t\t"weight" : "{0}"'.format(p.m))
+            print('\t\t\t"volume" : "{0}"'.format(p.v))
+            print('\t\t\t"rotatable" : "{0}"'.format(p.rotation))
+            print('\t\t\t"rotated" : "{0}"'.format(p.rotated))
+            print('\t\t\t"items_ontop_ok" : "{0}"'.format(p.above))
+            print('\t\t\t"items_below_ok" : "{0}"'.format(p.below))
+            print('\t\t}')
+        print('\t}')
+    print('}')
+
+def outputhtml():
+    print ('Content-type: text/html\n')
+    print ('<html><body>')
+    cn = 0
+    for c in containers:
+        cn += 1
+        print("<h3>Container #{0} {1}% space filled</h3>".format(cn,c.reportefficiency()*100))
+        print("W: {0} D: {1} H: {2}<br/>".format(container_size[0],container_size[1],container_size[2]))
+        print("<table><tr><th>Name</th><th>X</th><th>Z</th><th>H</th><th>Rotated</th><th>Width</th><th>Depth</th><th>Height</th><th>Stackable (Above)</th><th>Stackable (Below)</th></tr>")
+        for p in c.packages:
+            print("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td>{6}</td><td>{7}</td><td>{8}</td><td>{9}</td></tr>".format(p.name,p.posx,p.posz,p.posy,p.rotated,p.x,p.z,p.y,p.above,p.below))
+        print("</table>")
+        print('<img src="data:image/png;base64,{0}">'.format(renderimg(c)))
+        print("<br/>")
+    print ('</body></html>')
+
+
 init()
-
-print('{')
-
-
-cn = 0
-for c in containers:
-    cn += 1
-    print('\t"container" : {')
-    print('\t\t"name" : "Container {0}"'.format(cn))
-    print('\t\t"width" : "{0}"'.format(c.zone.x))
-    print('\t\t"depth" : "{0}"'.format(c.zone.z))
-    print('\t\t"height" : "{0}"'.format(c.zone.y))
-    print('\t\t"efficiency" : "{0}"'.format(c.reportefficiency()))
-    print('\t\t"imagedata" : "{0}"'.format(renderimg(c)))
-    for p in c.packages:
-        print('\t\t"package" : {')
-        print('\t\t\t"name" : "{0}"'.format(p.name))
-        print('\t\t\t"width" : "{0}"'.format(p.x))
-        print('\t\t\t"height" : "{0}"'.format(p.y))
-        print('\t\t\t"depth" : "{0}"'.format(p.z))
-        print('\t\t\t"position_x" : "{0}"'.format(p.posx))
-        print('\t\t\t"position_y" : "{0}"'.format(p.posy))
-        print('\t\t\t"position_z" : "{0}"'.format(p.posz))
-        print('\t\t\t"weight" : "{0}"'.format(p.m))
-        print('\t\t\t"volume" : "{0}"'.format(p.v))
-        print('\t\t\t"rotatable" : "{0}"'.format(p.rotation))
-        print('\t\t\t"rotated" : "{0}"'.format(p.rotated))
-        print('\t\t\t"items_ontop_ok" : "{0}"'.format(p.above))
-        print('\t\t\t"items_below_ok" : "{0}"'.format(p.below))
-        print('\t\t}')
-    print('\t}')
-if len(packages) > 0:
-    print('\t"orphan_packages" : {')
-    for p in packages:
-        print('\t\t"package" : {')
-        print('\t\t\t"name" : "{0}"'.format(p.name))
-        print('\t\t\t"width" : "{0}"'.format(p.x))
-        print('\t\t\t"height" : "{0}"'.format(p.y))
-        print('\t\t\t"depth" : "{0}"'.format(p.z))
-        print('\t\t\t"position_x" : "{0}"'.format(p.posx))
-        print('\t\t\t"position_y" : "{0}"'.format(p.posy))
-        print('\t\t\t"position_z" : "{0}"'.format(p.posz))
-        print('\t\t\t"weight" : "{0}"'.format(p.m))
-        print('\t\t\t"volume" : "{0}"'.format(p.v))
-        print('\t\t\t"rotatable" : "{0}"'.format(p.rotation))
-        print('\t\t\t"rotated" : "{0}"'.format(p.rotated))
-        print('\t\t\t"items_ontop_ok" : "{0}"'.format(p.above))
-        print('\t\t\t"items_below_ok" : "{0}"'.format(p.below))
-        print('\t\t}')
-    print('\t}')
-print('}')
+outputhtml()
