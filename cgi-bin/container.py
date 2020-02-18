@@ -23,11 +23,9 @@ width, height = 640, 480
 packages = []
 containers = []
 
+# defines a volume in which a package could be placed
 class Zone:
     def __init__(self,px,pz,py,sx,sz,sy,f=False):
-        #print("Zone made P:{0},{1},{2} S:{3},{4},{5}<br/>".format(px,pz,py,sx,sz,sy))
-        if sx < 1 or sz < 1 or sy < 1:
-            print("Warning : Zone made P:{0},{1},{2} S:{3},{4},{5}<br/>".format(px,pz,py,sx,sz,sy))
         self.posx = px
         self.posz = pz
         self.posy = py
@@ -39,16 +37,16 @@ class Zone:
     def doesfit(self,xs,zs,ys):
         return xs <= self.x and ys <= self.y and zs <= self.z
 
+    # returns two volumes left over from placing a package in this volume
     def subs(self,xs,zs):
         s = []
         if (self.x-xs > 1.0):
-            #print("Making zone from sub A<br/>")
             s.append(Zone(self.posx+xs,self.posz,self.posy,self.x-xs,self.z,self.y,self.floor))
         if (self.z-zs > 1.0):
-            #print("Making zone from sub B<br/>")
             s.append(Zone(self.posx,self.posz+zs,self.posy,xs,self.z-zs,self.y,self.floor))
         return s
             
+# defines a packages attributes, and position in container space
 class Package:
     def __init__(self,name,l,w,h,m,above,below,rotation):
         self.name = name
@@ -70,11 +68,13 @@ class Package:
     def __str__(self):
         return '"{0}" {1}x{2}x{3} ({4}) w {5} z {6} Above {7} Below {8} Rotate {9}'.format(self.name, self.z, self.x, self.y, self.v, self.m, self.q, self.above, self.below, self.rotation)
         
+    # for sorting: packages locked to the floor should be placed first, then the bulkiest packages
     def __lt__ (self,other):
         if self.below != other.below:
             return other.below
         return other.q < self.q
         
+    # swap x and z if allowed
     def rotate(self):
         if self.rotation:
             c = self.z
@@ -82,6 +82,7 @@ class Package:
             self.x = c
             self.rotated = not self.rotated
 
+    # returns the 8 vertices in container space for rendering
     def verts(self):
         return [[   self.posx,          self.posy,          self.posz           ],
                 [   self.posx,          self.posy,          self.posz+self.z    ],
@@ -92,6 +93,7 @@ class Package:
                 [   self.posx+self.x,   self.posy+self.y,   self.posz+self.z    ],
                 [   self.posx+self.x,   self.posy+self.y,   self.posz           ]]
 
+# a shipping container; it has a root zone that all other zones are cut from, and a list of packages placed within it
 class Container:
     def __init__(self,x,z,h):
         self.zone = Zone(0,0,0,x,z,h,True)
@@ -104,23 +106,29 @@ class Container:
             v = v + p.v
         return v/cv
 
+# attempt to fit packages into a zone
 def fitpackagesintozone(packages,zone):
     subzones = []
     for p in packages:
+        # if the package can't have anything below it, and we're not on the floor, reject it
         if not zone.floor and not p.below:
             continue
+        # if an already placed package slipped through, reject it
         if p.placed:
             continue
+        # if the package fits in its natural orientation, mark it placed and set its position in the container
         if zone.doesfit(p.x,p.z,p.y):
             p.placed = True
             p.posx = zone.posx
             p.posz = zone.posz
             p.posy = zone.posy
+            # if the package can have things on top of it, and there's space left above it, then create a prioritized zone above the package
             if p.above and zone.y > p.y:
-                #print("Making zone from package<br/>")
                 subzones.append(Zone(p.posx,p.posz,p.posy+p.y,p.x,p.z,zone.y-p.y))
+            # create two new zones from the volume leftover from placing this package. Prioritize the back wall
             subzones.extend(zone.subs(p.x,p.z))
             break
+        # if the package didn't fit, try rotating it first if allowed
         elif p.rotation and zone.doesfit(p.z,p.x,p.y):
             p.rotate()
             p.placed = True
@@ -128,10 +136,10 @@ def fitpackagesintozone(packages,zone):
             p.posz = zone.posz
             p.posy = zone.posy
             if p.above and zone.y > p.y:
-                #print("Making zone from package<br/>")
                 subzones.append(Zone(p.posx,p.posz,p.posy+p.y,p.x,p.z,zone.y-p.y))
             subzones.extend(zone.subs(p.x,p.z))
             break
+    # recurse into newly created smaller zones
     for s in subzones:
         fitpackagesintozone(packages,s)
 
@@ -157,11 +165,13 @@ def setcamera(w,h,d):
     gluLookAt(q, q, q, w*0.5, h*0.5, d*0.5, 0.0, 1.0, 0.0)
     
 def drawverts(v,unlocked,above,below):
+    # draw solid packages
     glPolygonOffset(1,1)
     glPolygonMode(GL_FRONT_AND_BACK,GL_FILL)
     glEnable(GL_POLYGON_OFFSET_FILL)
     glBegin(GL_QUADS)
 
+    # green if free rotation, cyan if locked rotation
     if unlocked:
         glColor4d(0.0,1.0,0.0,0.5)
     else:
@@ -187,6 +197,9 @@ def drawverts(v,unlocked,above,below):
 
     glEnd()
 
+    # draw package outlines
+    
+    # black if the package can have things above/below it, blue if forbidden
     topcolor = [0.0,0.0,0.0,1.0]
     bottomcolor = [0.0,0.0,0.0,1.0]
     if not above:
@@ -224,6 +237,7 @@ def drawverts(v,unlocked,above,below):
     glEnd()
     
 def drawcontainer(c):
+    # container is just a red outline
     glPolygonOffset(1,1)
     glPolygonMode(GL_FRONT_AND_BACK,GL_LINE)
     glDisable(GL_POLYGON_OFFSET_FILL)
@@ -265,7 +279,6 @@ def drawcontainer(c):
 
     glEnd()
     
-
 def render(c):
     setcamera(c.zone.x,c.zone.y,c.zone.z)
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
@@ -280,12 +293,15 @@ def render(c):
 def renderimg(c):
     render(c)
 
+    # uses imageops to capture the window render
     glPixelStorei(GL_PACK_ALIGNMENT, 1)
     data = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
     image = Image.frombytes("RGBA", (width, height), data)
     image = ImageOps.flip(image)
+    # write image to buffer for encoding
     buffer = BytesIO()
     image.save(buffer,format='PNG')
+    # encode image in base64 for embedding
     im_data = base64.b64encode(buffer.getvalue())
     
     return im_data.decode()
