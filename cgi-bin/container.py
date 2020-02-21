@@ -341,13 +341,10 @@ def renderimg(c):
 import json
 def outputjson():
     print ('Content-type: application/json\n')
-    obj_data = {containers,packages}
-    print(json.dumps(obj_data))
-    return
     print('{')
     cn = 0
     if len(containers)>0:
-        print('{"containers":[')
+        print('"containers":[')
     cfirst = True
     for c in containers:
         cn += 1
@@ -355,12 +352,11 @@ def outputjson():
             print(',')
         else:
             cfirst = False
-        print('"container" : {')
-        print('"name" : "Container {0}",'.format(cn))
-        print('"width" : "{0}",'.format(c.zone.x))
-        print('"depth" : "{0}",'.format(c.zone.z))
-        print('"height" : "{0}",'.format(c.zone.y))
-        print('"efficiency" : "{0}",'.format(c.reportefficiency()))
+        print('{{"name" : "Container {0}",'.format(cn))
+        print('"width" : {0},'.format(c.zone.x))
+        print('"depth" : {0},'.format(c.zone.z))
+        print('"height" : {0},'.format(c.zone.y))
+        print('"efficiency" : {0},'.format(c.reportefficiency()))
 #       print('\t\t"imagedata" : "{0}",'.format(renderimg(c)))
         print('"packages":[')
         pfirst = True
@@ -369,8 +365,7 @@ def outputjson():
                 print(',')
             else:
                 pfirst = False
-            print('"package" : {')
-            print('"name" : "{0}",'.format(p.name))
+            print('{{"name" : "{0}",'.format(p.name))
             print('"width" : "{0}",'.format(p.x))
             print('"height" : "{0}",'.format(p.y))
             print('"depth" : "{0}",'.format(p.z))
@@ -385,7 +380,7 @@ def outputjson():
             print('"items_below_ok" : "{0}"'.format(p.below))
             print('}') # close package
         print(']}') # close packages and container
-    print(']}') # close containers
+    print(']') # close containers
     if len(packages) > 0:
         if len(containers) > 0:
             print(',')
@@ -396,8 +391,7 @@ def outputjson():
                 print(',')
             else:
                 pfirst = False
-            print('"package" : {')
-            print('"name" : "{0}",'.format(p.name))
+            print('{{"name" : "{0}",'.format(p.name))
             print('"width" : "{0}",'.format(p.x))
             print('"height" : "{0}",'.format(p.y))
             print('"depth" : "{0}",'.format(p.z))
