@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # This script takes POST data
 
 # POST variables expected:
@@ -29,17 +30,17 @@ import cgi
 import cgitb
 
 # for encoding/embedding images
-import base64
-from io import BytesIO
+#import base64
+#from io import BytesIO
 
 # for rendering containers
-from OpenGL.GL import *
-from OpenGL.GLU import *
-from OpenGL.GLUT import *
+#from OpenGL.GL import *
+#from OpenGL.GLU import *
+#from OpenGL.GLUT import *
 
 # for capturing the renders without writing to disk
-from PIL import Image
-from PIL import ImageOps
+#from PIL import Image
+#from PIL import ImageOps
 
 # Set this to your preferred log destination
 logpath = './log'
@@ -337,56 +338,81 @@ def renderimg(c):
     
     return im_data.decode()
 
+import json
 def outputjson():
     print ('Content-type: application/json\n')
+    obj_data = {containers,packages}
+    print(json.dumps(obj_data))
+    return
     print('{')
     cn = 0
+    if len(containers)>0:
+        print('{"containers":[')
+    cfirst = True
     for c in containers:
         cn += 1
-        print('\t"container" : {')
-        print('\t\t"name" : "Container {0}"'.format(cn))
-        print('\t\t"width" : "{0}"'.format(c.zone.x))
-        print('\t\t"depth" : "{0}"'.format(c.zone.z))
-        print('\t\t"height" : "{0}"'.format(c.zone.y))
-        print('\t\t"efficiency" : "{0}"'.format(c.reportefficiency()))
-        print('\t\t"imagedata" : "{0}"'.format(renderimg(c)))
+        if not cfirst:
+            print(',')
+        else:
+            cfirst = False
+        print('"container" : {')
+        print('"name" : "Container {0}",'.format(cn))
+        print('"width" : "{0}",'.format(c.zone.x))
+        print('"depth" : "{0}",'.format(c.zone.z))
+        print('"height" : "{0}",'.format(c.zone.y))
+        print('"efficiency" : "{0}",'.format(c.reportefficiency()))
+#       print('\t\t"imagedata" : "{0}",'.format(renderimg(c)))
+        print('"packages":[')
+        pfirst = True
         for p in c.packages:
-            print('\t\t"package" : {')
-            print('\t\t\t"name" : "{0}"'.format(p.name))
-            print('\t\t\t"width" : "{0}"'.format(p.x))
-            print('\t\t\t"height" : "{0}"'.format(p.y))
-            print('\t\t\t"depth" : "{0}"'.format(p.z))
-            print('\t\t\t"position_x" : "{0}"'.format(p.posx))
-            print('\t\t\t"position_y" : "{0}"'.format(p.posy))
-            print('\t\t\t"position_z" : "{0}"'.format(p.posz))
-            print('\t\t\t"weight" : "{0}"'.format(p.m))
-            print('\t\t\t"volume" : "{0}"'.format(p.v))
-            print('\t\t\t"rotatable" : "{0}"'.format(p.rotation))
-            print('\t\t\t"rotated" : "{0}"'.format(p.rotated))
-            print('\t\t\t"items_ontop_ok" : "{0}"'.format(p.above))
-            print('\t\t\t"items_below_ok" : "{0}"'.format(p.below))
-            print('\t\t}')
-        print('\t}')
+            if not pfirst:
+                print(',')
+            else:
+                pfirst = False
+            print('"package" : {')
+            print('"name" : "{0}",'.format(p.name))
+            print('"width" : "{0}",'.format(p.x))
+            print('"height" : "{0}",'.format(p.y))
+            print('"depth" : "{0}",'.format(p.z))
+            print('"position_x" : "{0}",'.format(p.posx))
+            print('"position_y" : "{0}",'.format(p.posy))
+            print('"position_z" : "{0}",'.format(p.posz))
+            print('"weight" : "{0}",'.format(p.m))
+            print('"volume" : "{0}",'.format(p.v))
+            print('"rotatable" : "{0}",'.format(p.rotation))
+            print('"rotated" : "{0}",'.format(p.rotated))
+            print('"items_ontop_ok" : "{0}",'.format(p.above))
+            print('"items_below_ok" : "{0}"'.format(p.below))
+            print('}') # close package
+        print(']}') # close packages and container
+    print(']}') # close containers
     if len(packages) > 0:
-        print('\t"orphan_packages" : {')
+        if len(containers) > 0:
+            print(',')
+        print('"orphan_packages" : [')
+        pfirst = True
         for p in packages:
-            print('\t\t"package" : {')
-            print('\t\t\t"name" : "{0}"'.format(p.name))
-            print('\t\t\t"width" : "{0}"'.format(p.x))
-            print('\t\t\t"height" : "{0}"'.format(p.y))
-            print('\t\t\t"depth" : "{0}"'.format(p.z))
-            print('\t\t\t"position_x" : "{0}"'.format(p.posx))
-            print('\t\t\t"position_y" : "{0}"'.format(p.posy))
-            print('\t\t\t"position_z" : "{0}"'.format(p.posz))
-            print('\t\t\t"weight" : "{0}"'.format(p.m))
-            print('\t\t\t"volume" : "{0}"'.format(p.v))
-            print('\t\t\t"rotatable" : "{0}"'.format(p.rotation))
-            print('\t\t\t"rotated" : "{0}"'.format(p.rotated))
-            print('\t\t\t"items_ontop_ok" : "{0}"'.format(p.above))
-            print('\t\t\t"items_below_ok" : "{0}"'.format(p.below))
-            print('\t\t}')
-        print('\t}')
-    print('}')
+            if not pfirst:
+                print(',')
+            else:
+                pfirst = False
+            print('"package" : {')
+            print('"name" : "{0}",'.format(p.name))
+            print('"width" : "{0}",'.format(p.x))
+            print('"height" : "{0}",'.format(p.y))
+            print('"depth" : "{0}",'.format(p.z))
+            print('"position_x" : "{0}",'.format(p.posx))
+            print('"position_y" : "{0}",'.format(p.posy))
+            print('"position_z" : "{0}",'.format(p.posz))
+            print('"weight" : "{0}",'.format(p.m))
+            print('"volume" : "{0}",'.format(p.v))
+            print('"rotatable" : "{0}",'.format(p.rotation))
+            print('"rotated" : "{0}",'.format(p.rotated))
+            print('"items_ontop_ok" : "{0}",'.format(p.above))
+            print('"items_below_ok" : "{0}"'.format(p.below))
+            print('}') # close package
+        print(']') # close orphan_packages
+    print('}') # close json
 
 def outputhtml():
     print ('Content-type: text/html\n')
@@ -400,7 +426,7 @@ def outputhtml():
         for p in c.packages:
             print("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td>{6}</td><td>{7}</td><td>{8}</td><td>{9}</td></tr>".format(p.name,p.posx,p.posz,p.posy,p.rotated,p.x,p.z,p.y,p.above,p.below))
         print("</table>")
-        print('<img src="data:image/png;base64,{0}">'.format(renderimg(c)))
+#        print('<img src="data:image/png;base64,{0}">'.format(renderimg(c)))
         print("<br/>")
     print ('</body></html>')
 
@@ -456,7 +482,7 @@ while True:
         containers.pop(-1)
         break
 # init render settings
-init()
+#init()
 
 # final output
 outputjson()
