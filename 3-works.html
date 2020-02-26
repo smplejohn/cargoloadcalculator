@@ -65,8 +65,9 @@ function writeContainer(value,index,array) {
     document.write("Depth: "+value.depth+"</p>");
     document.write("<h4>Rendering</h4>");
     document.write("<div class=\"container\"/>");
-    var div = document.createElement("span");
+    var div = document.createElement("div");
     div.class="container";
+    document.body.append(div);
     var scene = makeContainerScene(div,value);
     scenes.push(scene);
     document.write("<h4>Packages</h4>");
@@ -80,11 +81,7 @@ function writePackages(value,index,array) {
 }
 
 function renderScene(value) {
-    //console.log(value);
     var {scene, camera, div} = value;
-    //console.log(scene);
-    //console.log(camera);
-    //console.log(div);
 
     // get the viewport relative position of this element
     const {left, right, top, bottom, width, height} =
