@@ -5,7 +5,8 @@ f.write('<html><body><form action="/cgi-bin/container.py" method="POST">\n')
 f.write('<input type="text" name="cwidth" value="50">\n')
 f.write('<input type="text" name="cdepth" value="100">\n')
 f.write('<input type="text" name="cheight" value="50"><br/>\n\n')
-#length[] width[] height[] qty[] weight[] rotation[] top[] bottom[]
+f.write('<input type="text" name="palette_load" value="checked"><br/>\n\n')
+f.write('<input type="text" name="palette_height" value="5"><br/>\n\n')
 
 checked = ['unchecked','checked']
 
@@ -19,6 +20,9 @@ for i in range(randint(20,100)):
     f.write('<input type="text" name="rotation[]" value="%s">\n' % choice(checked))
     f.write('<input type="text" name="top[]" value="%s">\n' % choice(checked))
     f.write('<input type="text" name="bottom[]" value="%s">\n' % choice(checked))
+    f.write('<input type="text" name="rotation_standard[]" value="%s">\n' % choice(checked))
+    f.write('<input type="text" name="rotation_side[]" value="%s">\n' % choice(checked))
+    f.write('<input type="text" name="rotation_up[]" value="%s">\n' % choice(checked))
     f.write('<br/>\n')
 
 f.write('<input type="submit">\n</form></body></html>\n')
