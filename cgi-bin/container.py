@@ -266,6 +266,10 @@ if isinstance(postdata.getvalue('name[]'), list):
         l = float(postdata.getvalue('length[]')[i])
         w = float(postdata.getvalue('width[]')[i])
         h = float(postdata.getvalue('height[]')[i])
+        if palette_load:
+            h = h - palette_height
+        if h <= 0.0:
+            continue
         m = float(postdata.getvalue('weight[]')[i])
         above = postdata.getvalue('top[]')[i] == 'checked'
         below = postdata.getvalue('bottom[]')[i] == 'checked'
@@ -283,6 +287,10 @@ else:
     l = float(postdata.getvalue('length[]'))
     w = float(postdata.getvalue('width[]'))
     h = float(postdata.getvalue('height[]'))
+    if palette_load:
+        h = h - palette_height
+    if h <= 0.0:
+        continue
     m = float(postdata.getvalue('weight[]'))
     above = postdata.getvalue('top[]') == 'checked'
     below = postdata.getvalue('bottom[]') == 'checked'
