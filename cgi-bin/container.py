@@ -66,7 +66,7 @@ class Zone:
     def subs(self,xs,zs):
         s = []
         if self.x > xs:
-            s.append(Zone(self.posx+xs,self.posz,self.posy,self.x-xs,self.z-zs,self.y,self.floor))
+            s.append(Zone(self.posx+xs,self.posz,self.posy,self.x-xs,zs,self.y,self.floor))
             #s.append(Zone(self.posx+xs,self.posz,self.posy,self.x-xs,self.z,self.y,self.floor))
         if self.z > zs:
             s.append(Zone(self.posx,self.posz+zs,self.posy,self.x,self.z-zs,self.y,self.floor))
