@@ -65,10 +65,12 @@ class Zone:
     # returns two volumes left over from placing a package in this volume
     def subs(self,xs,zs):
         s = []
-        if (self.x-xs > 1.0):
-            s.append(Zone(self.posx+xs,self.posz,self.posy,self.x-xs,self.z,self.y,self.floor))
-        if (self.z-zs > 1.0):
-            s.append(Zone(self.posx,self.posz+zs,self.posy,xs,self.z-zs,self.y,self.floor))
+        if self.x > xs:
+            s.append(Zone(self.posx+xs,self.posz,self.posy,self.x-xs,self.z-zs,self.y,self.floor))
+            #s.append(Zone(self.posx+xs,self.posz,self.posy,self.x-xs,self.z,self.y,self.floor))
+        if self.z > zs:
+            s.append(Zone(self.posx,self.posz+zs,self.posy,self.x,self.z-zs,self.y,self.floor))
+            #s.append(Zone(self.posx,self.posz+zs,self.posy,xs,self.z-zs,self.y,self.floor))
         return s
             
 # defines a packages attributes, and position in container space
@@ -247,7 +249,7 @@ def outputjson():
 # ***** MAIN CODE START *****
 
 # Log to file instead of publishing errors and code to the public
-cgitb.enable(display=0,logdir=logpath)
+cgitb.enable(display=1,logdir=logpath)
 
 # capture POST data
 postdata = cgi.FieldStorage()
@@ -289,20 +291,19 @@ else:
     h = float(postdata.getvalue('height[]'))
     if palette_load:
         h = h - palette_height
-    if h <= 0.0:
-        continue
-    m = float(postdata.getvalue('weight[]'))
-    above = postdata.getvalue('top[]') == 'checked'
-    below = postdata.getvalue('bottom[]') == 'checked'
-    rotation = postdata.getvalue('rotation[]') == 'checked'
-    rotation_standard = postdata.getvalue('rotation_standard[]') == 'checked'
-    rotation_side = postdata.getvalue('rotation_side[]') == 'checked'
-    rotation_up = postdata.getvalue('rotation_up[]') == 'checked'
-    
-    # if many packages are included on the same line, make them separate entries
-    for j in range(int(postdata.getvalue('qty[]'))):
-        p = Package(name,l,w,h,m,above,below,rotation,rotation_standard,rotation_side,rotation_up)
-        packages.append(p)
+    if h > 0.0:
+        m = float(postdata.getvalue('weight[]'))
+        above = postdata.getvalue('top[]') == 'checked'
+        below = postdata.getvalue('bottom[]') == 'checked'
+        rotation = postdata.getvalue('rotation[]') == 'checked'
+        rotation_standard = postdata.getvalue('rotation_standard[]') == 'checked'
+        rotation_side = postdata.getvalue('rotation_side[]') == 'checked'
+        rotation_up = postdata.getvalue('rotation_up[]') == 'checked'
+        
+        # if many packages are included on the same line, make them separate entries
+        for j in range(int(postdata.getvalue('qty[]'))):
+            p = Package(name,l,w,h,m,above,below,rotation,rotation_standard,rotation_side,rotation_up)
+            packages.append(p)
 
 # sort packages by bulkiness
 packages.sort()
