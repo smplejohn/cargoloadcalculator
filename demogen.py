@@ -6,7 +6,9 @@ f.write('<input type="text" name="cwidth" value="50">\n')
 f.write('<input type="text" name="cdepth" value="100">\n')
 f.write('<input type="text" name="cheight" value="50"><br/>\n\n')
 f.write('<input type="text" name="palette_load" value="checked"><br/>\n\n')
-f.write('<input type="text" name="palette_height" value="5"><br/>\n\n')
+f.write('<input type="text" name="pwidth" value="50"><br/>\n\n')
+f.write('<input type="text" name="pdepth" value="50"><br/>\n\n')
+f.write('<input type="text" name="pheight" value="5"><br/>\n\n')
 
 checked = ['unchecked','checked']
 

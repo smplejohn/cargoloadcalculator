@@ -42,6 +42,7 @@ logpath = './log'
 
 # default size
 container_size = [50,100,50]
+palette_size = [50,50,5]
 
 # image render size
 width, height = 640, 480
