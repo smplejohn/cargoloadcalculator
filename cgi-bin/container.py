@@ -3,11 +3,13 @@
 
 # POST variables expected:
 
-# cwidth            - Container width
-# cdepth            - Container depth
-# cheight           - Container height
+# cwidth            - Container width  (x)
+# cdepth            - Container depth  (z)
+# cheight           - Container height (y)
 # palette_load      - Whether or not this load should be on palettes
-# palette_height    - Height of palettes
+# pheight    - Height of palettes
+# pwidth     - Width of palettes
+# pdepth     - Depth of palettes
 
 # name[]    - Array of package identifiers
 # length[]  = Array of package depths
@@ -259,7 +261,9 @@ container_size[0] = float(postdata.getvalue('cwidth'))
 container_size[1] = float(postdata.getvalue('cdepth'))
 container_size[2] = float(postdata.getvalue('cheight'))
 palette_load = postdata.getvalue('palette_load') == 'checked'
-palette_height = float(postdata.getvalue('palette_height'))
+palette_size[0] = float(postdata.getvalue('pwidth'))
+palette_size[1] = float(postdata.getvalue('pdepth'))
+palette_size[2] = float(postdata.getvalue('pheight'))
 
 # get package details from POST data
 if isinstance(postdata.getvalue('name[]'), list):
@@ -268,10 +272,6 @@ if isinstance(postdata.getvalue('name[]'), list):
         l = float(postdata.getvalue('length[]')[i])
         w = float(postdata.getvalue('width[]')[i])
         h = float(postdata.getvalue('height[]')[i])
-        if palette_load:
-            h = h - palette_height
-        if h <= 0.0:
-            continue
         m = float(postdata.getvalue('weight[]')[i])
         above = postdata.getvalue('top[]')[i] == 'checked'
         below = postdata.getvalue('bottom[]')[i] == 'checked'
@@ -289,21 +289,18 @@ else:
     l = float(postdata.getvalue('length[]'))
     w = float(postdata.getvalue('width[]'))
     h = float(postdata.getvalue('height[]'))
-    if palette_load:
-        h = h - palette_height
-    if h > 0.0:
-        m = float(postdata.getvalue('weight[]'))
-        above = postdata.getvalue('top[]') == 'checked'
-        below = postdata.getvalue('bottom[]') == 'checked'
-        rotation = postdata.getvalue('rotation[]') == 'checked'
-        rotation_standard = postdata.getvalue('rotation_standard[]') == 'checked'
-        rotation_side = postdata.getvalue('rotation_side[]') == 'checked'
-        rotation_up = postdata.getvalue('rotation_up[]') == 'checked'
-        
-        # if many packages are included on the same line, make them separate entries
-        for j in range(int(postdata.getvalue('qty[]'))):
-            p = Package(name,l,w,h,m,above,below,rotation,rotation_standard,rotation_side,rotation_up)
-            packages.append(p)
+    m = float(postdata.getvalue('weight[]'))
+    above = postdata.getvalue('top[]') == 'checked'
+    below = postdata.getvalue('bottom[]') == 'checked'
+    rotation = postdata.getvalue('rotation[]') == 'checked'
+    rotation_standard = postdata.getvalue('rotation_standard[]') == 'checked'
+    rotation_side = postdata.getvalue('rotation_side[]') == 'checked'
+    rotation_up = postdata.getvalue('rotation_up[]') == 'checked'
+    
+    # if many packages are included on the same line, make them separate entries
+    for j in range(int(postdata.getvalue('qty[]'))):
+        p = Package(name,l,w,h,m,above,below,rotation,rotation_standard,rotation_side,rotation_up)
+        packages.append(p)
 
 # sort packages by bulkiness
 packages.sort()
