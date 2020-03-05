@@ -140,6 +140,7 @@ class Container:
 
 # attempt to fit packages into a zone
 def fitpackagesintozone(packages,zone):
+    numfit = 0
     subzones = []
     for p in packages:
         # if the package can't have anything below it, and we're not on the floor, reject it
@@ -155,6 +156,7 @@ def fitpackagesintozone(packages,zone):
                 p.posx = zone.posx
                 p.posy = zone.posy
                 p.posz = zone.posz
+                numfit = numfit + 1
                 # if the package can have things on top of it, and there's space left above it, then create a prioritized zone above the package
                 if p.above and zone.y > p.y:
                     subzones.append(Zone(p.posx,p.posz,p.posy+p.y,p.x,p.z,zone.y-p.y))
@@ -168,10 +170,11 @@ def fitpackagesintozone(packages,zone):
 
     # recurse into newly created smaller zones
     for s in subzones:
-        fitpackagesintozone(packages,s)
+        numfit = numfit + fitpackagesintozone(packages,s)
+    return numfit
 
 
-def outputjson():
+def outputjson(fname=''):
     print ('Content-type: application/json')
     print ('Access-Control-Allow-Origin: *')
     print ('')
@@ -248,6 +251,10 @@ def outputjson():
         jstr += ']' # close orphan_packages
     jstr += '}' # close json
     print(jstr);
+    if len(fname) > 0:
+        f = open(fname,"w")
+        f.write("var jsontext='"+jstr+"';")
+        f.close()
 
 # ***** MAIN CODE START *****
 
@@ -306,12 +313,31 @@ else:
 # sort packages by bulkiness
 packages.sort()
 
+def fitpalettesintozone(packages,zone):
+    palette = (Package('Palette',palette_size[1],palette_size[0],palette_size[2],1,True,False,False,False,False,False))
+    if zone.doesfit(palette.x,palette.y,palette.z):
+        palette.posx = zone.posx
+        palette.posy = zone.posy
+        palette.posz = zone.posz
+        palette_top = Zone(zone.posx,zone.posz,zone.posy+palette_size[2],palette.x,palette.z,zone.y-palette.y,True)
+        if fitpackagesintozone(packages,palette_top) > 0:
+            palette.placed = True
+            packages.insert(0,palette)
+            subzones = zone.subs(palette.x,palette.z)
+            for s in subzones:
+                fitpalettesintozone(packages,s)
+
 # attempt to fit packages in a new container
 while True:
     if len(packages) < 1:
         break
     containers.append(Container(container_size[0],container_size[1],container_size[2]))
-    fitpackagesintozone(packages,containers[-1].zone)
+    if not palette_load:
+        fitpackagesintozone(packages,containers[-1].zone)
+    else:
+        fitpalettesintozone(packages,containers[-1].zone)
+            
+            
     
     # remove packages that have been successfully placed from the orphan list
     placed = []
