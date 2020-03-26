@@ -127,6 +127,8 @@ function main() {
         cube.position.x = p.position_x + p.width*0.5;// - array[index].width/2;
         cube.position.y = p.position_y + p.height*0.5;// - array[index].height/2;
         cube.position.z = p.position_z + p.depth*0.5;// - array[index].depth/2;
+        if (p.name == 'Palette')
+            cube.material.color.setHex(0xffff00);
         scene.add(cube);
         lines.position.x = p.position_x + p.width*0.5;// - array[index].width/2;
         lines.position.y = p.position_y + p.height*0.5;// - array[index].height/2;

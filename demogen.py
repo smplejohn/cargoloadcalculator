@@ -2,13 +2,15 @@ from random import randint, choice
 
 f = open('demo.html','w')
 f.write('<html><body><form action="/cgi-bin/container.py" method="POST">\n')
+f.write('<input type="submit"><br/>')
 f.write('<input type="text" name="cwidth" value="50">\n')
 f.write('<input type="text" name="cdepth" value="100">\n')
 f.write('<input type="text" name="cheight" value="50"><br/>\n\n')
 f.write('<input type="text" name="palette_load" value="checked"><br/>\n\n')
 f.write('<input type="text" name="pwidth" value="50"><br/>\n\n')
 f.write('<input type="text" name="pdepth" value="50"><br/>\n\n')
-f.write('<input type="text" name="pheight" value="5"><br/>\n\n')
+f.write('<input type="text" name="pheight" value="6"><br/>\n\n')
+f.write('<input type="text" name="sheight" value="96"><br/>\n\n')
 
 checked = ['unchecked','checked']
 
@@ -27,5 +29,5 @@ for i in range(randint(20,100)):
     f.write('<input type="text" name="rotation_up[]" value="%s">\n' % choice(checked))
     f.write('<br/>\n')
 
-f.write('<input type="submit">\n</form></body></html>\n')
+f.write('</form></body></html>\n')
 f.close()    

@@ -10,6 +10,7 @@
 # pheight    - Height of palettes
 # pwidth     - Width of palettes
 # pdepth     - Depth of palettes
+# sheight    - Max height of palette stack
 
 # name[]    - Array of package identifiers
 # length[]  = Array of package depths
@@ -43,6 +44,7 @@ logpath = './log'
 # default size
 container_size = [50,100,50]
 palette_size = [50,50,5]
+stack_height = 96
 
 # image render size
 width, height = 640, 480
@@ -272,6 +274,7 @@ palette_load = postdata.getvalue('palette_load') == 'checked'
 palette_size[0] = float(postdata.getvalue('pwidth'))
 palette_size[1] = float(postdata.getvalue('pdepth'))
 palette_size[2] = float(postdata.getvalue('pheight'))
+stack_height = float(postdata.getvalue('sheight'))
 
 # get package details from POST data
 if isinstance(postdata.getvalue('name[]'), list):
@@ -319,7 +322,7 @@ def fitpalettesintozone(packages,zone):
         palette.posx = zone.posx
         palette.posy = zone.posy
         palette.posz = zone.posz
-        palette_top = Zone(zone.posx,zone.posz,zone.posy+palette_size[2],palette.x,palette.z,zone.y-palette.y,True)
+        palette_top = Zone(zone.posx,zone.posz,zone.posy+palette_size[2],palette.x,palette.z,min(zone.y,stack_height)-palette.y,True)
         if fitpackagesintozone(packages,palette_top) > 0:
             palette.placed = True
             packages.insert(0,palette)
